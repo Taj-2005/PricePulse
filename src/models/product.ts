@@ -1,0 +1,1 @@
+console.log("Product model file loaded");
