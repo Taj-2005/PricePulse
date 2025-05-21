@@ -8,6 +8,7 @@ export default function Home() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setStatus("Tracking...");
+
     try {
       const res = await fetch("/api/track", {
         method: "POST",
@@ -15,17 +16,16 @@ export default function Home() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await res.json();  // CRASHES if res isn't valid JSON
-
-      if (!res.ok) throw new Error(data?.error || "Tracking failed");
+      const data = await res.json(); // safe now
+      if (!res.ok) throw new Error(data?.error || "Unknown error");
 
       setStatus(`Tracked: ${data.title} @ ${data.price}`);
     } catch (err: any) {
-      console.error("Tracking error:", err.message);
+      console.error("Frontend error:", err.message);
       setStatus(`Error: ${err.message}`);
     }
-
   };
+
 
   return (
     <main className="p-6 max-w-xl mx-auto">
