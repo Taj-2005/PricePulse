@@ -8,13 +8,23 @@ export default function Home() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setStatus("Tracking...");
-    const res = await fetch("/api/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
-    });
-    const data = await res.json();
-    setStatus(`Tracked: ${data.title} @ ${data.price}`);
+    try {
+      const res = await fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      const data = await res.json();  // CRASHES if res isn't valid JSON
+
+      if (!res.ok) throw new Error(data?.error || "Tracking failed");
+
+      setStatus(`Tracked: ${data.title} @ ${data.price}`);
+    } catch (err: any) {
+      console.error("Tracking error:", err.message);
+      setStatus(`Error: ${err.message}`);
+    }
+
   };
 
   return (
