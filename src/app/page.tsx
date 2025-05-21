@@ -5,7 +5,7 @@ export default function Home() {
   const [url, setUrl] = useState("");
   const [status, setStatus] = useState("");
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("Tracking...");
 
@@ -16,8 +16,16 @@ export default function Home() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await res.json(); // safe now
-      if (!res.ok) throw new Error(data?.error || "Unknown error");
+      const text = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid JSON response from server");
+      }
+
+      if (!res.ok) throw new Error(data?.error || "Unknown server error");
 
       setStatus(`Tracked: ${data.title} @ ${data.price}`);
     } catch (err: any) {
@@ -25,6 +33,7 @@ export default function Home() {
       setStatus(`Error: ${err.message}`);
     }
   };
+
 
 
   return (

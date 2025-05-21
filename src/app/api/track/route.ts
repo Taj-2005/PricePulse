@@ -8,17 +8,18 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const url = body?.url;
 
-    if (!url) return NextResponse.json({ error: "Missing URL" }, { status: 400 });
+    if (!url) {
+      return NextResponse.json({ error: "URL is required" }, { status: 400 });
+    }
 
     await connectDB();
-
     const { title, price } = await scrapeProduct(url);
 
-    const entry = await Product.create({ url, title, price });
+    const saved = await Product.create({ url, title, price });
 
-    return NextResponse.json(entry);
+    return NextResponse.json(saved);
   } catch (err: any) {
-    console.error("API Error:", err.message);
+    console.error("API /track error:", err.message);
     return NextResponse.json({ error: err.message || "Unknown error" }, { status: 500 });
   }
 }
