@@ -1,5 +1,7 @@
 'use client';
 import { useState } from "react";
+import toast from "react-hot-toast";
+import getFriendlyErrorMessage from "@/lib/errors";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -26,12 +28,37 @@ export default function Home() {
       }
 
       if (!res.ok) throw new Error(data?.error || "Unknown server error");
-
+      toast.success(`Tracked data`);
       setStatus(`Tracked: ${data.title} @ ${data.price}`);
     } catch (err: any) {
-      console.error("Frontend error:", err.message);
-      setStatus(`Error: ${err.message}`);
-    }
+        console.error("Frontend error:", err.message);
+
+        // Extract status code from error message (fallback to 500)
+        const match = err.message.match(/status code (\d+)/);
+        const code = match ? parseInt(match[1], 10) : 500;
+
+        // Map error messages to friendly messages manually for common cases
+        let friendlyMessage = "";
+
+        if (code === 500) {
+          // Inspect error message to customize for your known backend errors
+          if (err.message.includes("Product not found") || err.message.includes("404")) {
+            friendlyMessage = getFriendlyErrorMessage(404);
+          } else if (err.message.includes("Too many requests") || err.message.includes("429")) {
+            friendlyMessage = getFriendlyErrorMessage(429);
+          } else if (err.message.includes("Invalid URL")) {
+            friendlyMessage = getFriendlyErrorMessage(400);
+          } else {
+            friendlyMessage = getFriendlyErrorMessage(500);
+          }
+        } else {
+          // Use the code directly if it's not 500
+          friendlyMessage = getFriendlyErrorMessage(code);
+        }
+
+        toast.error(friendlyMessage);
+        setStatus(`${friendlyMessage}`);
+      }
   };
 
 
