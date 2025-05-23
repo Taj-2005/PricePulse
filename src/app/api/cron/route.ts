@@ -50,7 +50,6 @@ export async function GET() {
       }
     });
 
-    // Limit concurrency to 5
     await withConcurrencyLimit(scrapeTasks, 5);
 
     return NextResponse.json({ message: "Scraping completed." });
