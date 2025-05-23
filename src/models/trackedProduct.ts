@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const TrackedProductSchema = new mongoose.Schema({
   url: { type: String, required: true },
-  userEmail: { type: String },
-  targetPrice: { type: Number }, 
+  userEmail: { type: String, required: false },
+  targetPrice: { type: Number, required: false }, 
 });
 
 export const TrackedProduct =

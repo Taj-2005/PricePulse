@@ -24,7 +24,7 @@ export async function GET() {
       await Promise.all(
         batch.map(async (product) => {
           try {
-            const { title, price } = await scrapeProduct(product.url);
+            const { title, price } = await scrapeProduct(product.url, 4);
 
             // Save current price snapshot
             await Product.create({

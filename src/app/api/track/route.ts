@@ -1,30 +1,66 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import { Product } from "@/models/product";
 import { TrackedProduct } from "@/models/trackedProduct";
+import { Product } from "@/models/product";
 import { scrapeProduct } from "@/lib/scraper";
+import { NextRequest } from "next/server";
+import { sendEmail } from "@/lib/sendEmail";
 
 export async function POST(req: NextRequest) {
+  await connectDB();
   try {
     const { url, userEmail, targetPrice } = await req.json();
 
-    if (!url) return NextResponse.json({ error: "URL is required" }, { status: 400 });
+    if (!url || typeof url !== "string") {
+      return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
+    }
 
-    await connectDB();
+    // Scrape product data
+    const scraped = await scrapeProduct(url);
+    if (!scraped?.title || !scraped?.price) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
 
-    await TrackedProduct.updateOne(
-      { url },
-      { url, userEmail, targetPrice },
-      { upsert: true }
-    );
+    // Save price snapshot
+    await Product.create({
+      url,
+      title: scraped.title,
+      price: scraped.price,
+    });
 
-    const { title, price } = await scrapeProduct(url);
+    // Track product for future cron jobs
+    const existing = await TrackedProduct.findOne({ url });
+    if (!existing) {
+      await TrackedProduct.create({
+        url,
+        userEmail: userEmail || null,
+        targetPrice: targetPrice || null,
+      });
+    }
 
-    const saved = await Product.create({ url, title, price, timestamp: new Date() });
+    // Send alert if price is below target
+    if (userEmail && targetPrice) {
+      const numericPrice = parseFloat(scraped.price.replace(/[^\d.]/g, ""));
+      if (numericPrice <= targetPrice) {
+        await sendEmail(
+          userEmail,
+          "📉 Price Drop Alert from PricePulse!",
+          `The product "${scraped.title}" is now ₹${numericPrice}, below your target of ₹${targetPrice}.\n\nLink: ${url}`
+        );
+        console.log(`📧 Email sent to ${userEmail}`);
+      }
+    }
 
-    return NextResponse.json(saved);
+    return NextResponse.json({
+      title: scraped.title,
+      price: scraped.price,
+    });
   } catch (err: any) {
-    console.error("API /track error:", err.message);
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
+  console.error("Track API error:", err.message);
+  return NextResponse.json(
+    { error: err.message || "Unknown error" },
+    { status: err.status || 500 }
+  );
+}
+
 }

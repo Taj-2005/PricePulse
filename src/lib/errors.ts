@@ -10,6 +10,8 @@ export default function getFriendlyErrorMessage(status?: number, errorMessage?: 
       return "⏱ Too many requests. Please wait a moment.";
     case 500:
       return "🚨 Server error. Please try again later.";
+    case 502:
+      return "🔍 Product not found. Check if the Amazon link is correct (or) Amazon may be blocking us.";
     case 503:
       return "🛠 Service unavailable. Amazon may be blocking the request.";
     case 301:

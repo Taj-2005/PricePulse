@@ -41,10 +41,14 @@ export default function Home() {
     setHistory([]);
 
     try {
+      const body: any = { url };
+      if (userEmail) body.userEmail = userEmail;
+      if (targetPrice) body.targetPrice = Number(targetPrice);
+
       const res = await fetch("/api/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, userEmail, targetPrice: Number(targetPrice) }),
+        body: JSON.stringify(body),
       });
 
       const text = await res.text();
@@ -57,9 +61,11 @@ export default function Home() {
 
       if (!res.ok) throw new Error(data?.error || "Unknown server error");
 
+      if (!data.title || !data.price) throw new Error("Incomplete product data");
+
       setProduct({ title: data.title, price: data.price });
       setStatus(`Tracked: ${data.title} @ ${data.price}`);
-      toast.success(`Tracked data`);
+      toast.success(`Tracked product`);
 
       const historyRes = await fetch(`/api/history?url=${encodeURIComponent(url)}`);
       if (!historyRes.ok) throw new Error("Failed to fetch price history");
@@ -67,20 +73,22 @@ export default function Home() {
       const historyData = await historyRes.json();
       setHistory(historyData);
     } catch (err: any) {
-      console.error("Frontend error:", err.message);
-      let friendlyMessage = getFriendlyErrorMessage(500);
+        console.error("Frontend error:", err.message);
+        let friendlyMessage = getFriendlyErrorMessage(500); // default
 
-      if (err.message.includes("Product not found") || err.message.includes("404")) {
-        friendlyMessage = getFriendlyErrorMessage(404);
-      } else if (err.message.includes("Too many requests") || err.message.includes("429")) {
-        friendlyMessage = getFriendlyErrorMessage(429);
-      } else if (err.message.includes("Invalid URL")) {
-        friendlyMessage = getFriendlyErrorMessage(400);
+        if (err.status === 502 || err.message.includes("Failed to scrape")) {
+          friendlyMessage = getFriendlyErrorMessage(502);
+        } else if (err.message.includes("Product not found") || err.message.includes("404")) {
+          friendlyMessage = getFriendlyErrorMessage(404);
+        } else if (err.message.includes("Too many requests") || err.message.includes("429")) {
+          friendlyMessage = getFriendlyErrorMessage(429);
+        } else if (err.message.includes("Invalid URL")) {
+          friendlyMessage = getFriendlyErrorMessage(400);
+        }
+
+        toast.error(friendlyMessage);
+        setStatus(friendlyMessage);
       }
-
-      toast.error(friendlyMessage);
-      setStatus(friendlyMessage);
-    }
   };
 
   const chartData = {
@@ -123,7 +131,7 @@ export default function Home() {
   return (
     <main className="p-8 max-w-3xl mx-auto min-h-screen bg-white">
       <h1 className="text-3xl font-extrabold mb-8 text-gray-900 text-center select-none">PricePulse</h1>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <label htmlFor="url" className="block text-gray-700 font-medium mb-2">
           Amazon Product URL
@@ -141,7 +149,7 @@ export default function Home() {
         />
 
         <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-          Your Email (to receive alerts)
+          Your Email (optional) <span className="text-red-500 text-[0.8vw]">Kindly check the spam folder</span>
         </label>
         <input
           id="email"
@@ -151,12 +159,11 @@ export default function Home() {
           placeholder="you@example.com"
           className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-          required
           autoComplete="email"
         />
 
         <label htmlFor="targetPrice" className="block text-gray-700 font-medium mb-2">
-          Target Price (₹)
+          Target Price (optional)
         </label>
         <input
           id="targetPrice"
@@ -167,14 +174,14 @@ export default function Home() {
           className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           min={1}
-          required
         />
 
         <button
           type="submit"
-          disabled={!url || !userEmail || !targetPrice}
-          className={`w-full rounded-md py-3 font-semibold text-white transition
-            ${url && userEmail && targetPrice ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-300 cursor-not-allowed"}`}
+          disabled={!url}
+          className={`w-full rounded-md py-3 font-semibold text-white transition ${
+            (url && userEmail && targetPrice) || (url && !userEmail && !targetPrice) ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-300 cursor-not-allowed"
+          }`}
         >
           Track Price
         </button>
@@ -193,20 +200,14 @@ export default function Home() {
       )}
 
       {product && (
-        <section
-          aria-label="Tracked product details"
-          className="mt-10 p-6 bg-gray-50 rounded-lg shadow-sm border border-gray-200 flex flex-col items-center justify-center"
-        >
+        <section className="mt-10 p-6 bg-gray-50 rounded-lg shadow-sm border border-gray-200 flex flex-col items-center justify-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2 truncate">{product.title}</h2>
           <p className="text-2xl font-extrabold text-green-700">₹ {product.price}</p>
         </section>
       )}
 
       {history.length > 0 && (
-        <section
-          aria-label="Price history chart"
-          className="mt-12 p-6 bg-white rounded-lg shadow-lg border border-gray-100"
-        >
+        <section className="mt-12 p-6 bg-white rounded-lg shadow-lg border border-gray-100">
           <Line data={chartData} options={chartOptions} />
         </section>
       )}
