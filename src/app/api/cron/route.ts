@@ -4,55 +4,43 @@ import { TrackedProduct } from "@/models/trackedProduct";
 import { Product } from "@/models/product";
 import { scrapeProduct } from "@/lib/scraper";
 
-// Simple concurrency limiter helper
-async function withConcurrencyLimit(tasks: (() => Promise<void>)[], limit: number) {
-  const results = [];
-  const executing: Promise<void>[] = [];
-
-  for (const task of tasks) {
-    const p = task();
-    results.push(p);
-
-    if (limit <= tasks.length) {
-      const e: Promise<void> = p.then(() => {
-        executing.splice(executing.indexOf(e), 1);
-      });
-      executing.push(e);
-
-      if (executing.length >= limit) {
-        await Promise.race(executing);
-      }
-    }
-  }
-
-  await Promise.all(results);
+async function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function GET() {
   try {
     await connectDB();
     const products = await TrackedProduct.find();
+    const batchSize = 5;
 
-    const scrapeTasks = products.map((product) => async () => {
-      try {
-        const { title, price } = await scrapeProduct(product.url);
+    for (let i = 0; i < products.length; i += batchSize) {
+      const batch = products.slice(i, i + batchSize);
 
-        await Product.create({
-          url: product.url,
-          title,
-          price,
-          timestamp: new Date(),
-        });
+      await Promise.all(
+        batch.map(async (product) => {
+          try {
+            const { title, price } = await scrapeProduct(product.url);
 
-        console.log("✅ Tracked:", product.url);
-      } catch (error: any) {
-        console.error("❌ Failed to scrape:", product.url, error.message);
-      }
-    });
+            await Product.create({
+              url: product.url,
+              title,
+              price,
+              timestamp: new Date(),
+            });
 
-    await withConcurrencyLimit(scrapeTasks, 5);
+            console.log("✅ Tracked:", product.url);
+          } catch (error: any) {
+            console.error("❌ Failed to scrape:", product.url, error.message);
+          }
+        })
+      );
 
-    return NextResponse.json({ message: "Scraping completed." });
+      // Add delay between batches
+      await delay(3000); // 3 seconds
+    }
+
+    return NextResponse.json({ message: "Scraping completed in batches." });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
