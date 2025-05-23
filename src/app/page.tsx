@@ -104,19 +104,20 @@ export default function Home() {
     plugins: {
       legend: { position: "top" as const, labels: { color: "#374151" } },
       title: { display: true, text: "Price History Over Time", color: "#111827" },
-      tooltip: { mode: "index", intersect: false },
+      tooltip: { mode: "index" as const, intersect: false },
     },
     scales: {
-      x: { 
+      x: {
         ticks: { color: "#6B7280" },
         grid: { color: "#E5E7EB" },
       },
-      y: { 
+      y: {
         ticks: { color: "#6B7280" },
         grid: { color: "#E5E7EB" },
       },
     },
   };
+
 
   return (
     <main className="p-8 max-w-3xl mx-auto min-h-screen bg-white">
@@ -162,7 +163,7 @@ export default function Home() {
       {product && (
         <section
           aria-label="Tracked product details"
-          className="mt-10 p-6 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
+          className="mt-10 p-6 bg-gray-50 rounded-lg shadow-sm border border-gray-200 flex flex-col items-center justify-center"
         >
           <h2 className="text-xl font-semibold text-gray-900 mb-2 truncate">{product.title}</h2>
           <p className="text-2xl font-extrabold text-green-700">₹ {product.price}</p>
