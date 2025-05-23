@@ -7,19 +7,21 @@ import { Product } from "@/models/product";
 
 export function startScheduler() {
   cron.schedule("*/5 * * * *", async () => {
-    console.log("Starting hourly scrape...");
+    console.log("Starting scrape every 5 minutes...");
     try {
       await connectDB();
 
       const trackedUrls = await TrackedProduct.find().distinct("url");
-
+      console.log("Tracked URLs:", trackedUrls);
       for (const url of trackedUrls) {
+        console.log("Scraping URL:", url);
         try {
-          const { title, price } = await scrapeProduct(url);
-          await Product.create({ url, title, price });
-          console.log(`Scraped and saved: ${title}`);
+        const { title, price } = await scrapeProduct(url);
+        console.log(`Scraped title: ${title}, price: ${price}`);
+        await Product.create({ url, title, price });
+        console.log(`Saved product data for: ${url}`);
         } catch (err : any) {
-          console.error(`Failed to scrape ${url}:`, err.message);
+        console.error(`Failed to scrape ${url}:`, err.message);
         }
       }
     } catch (err : any) {

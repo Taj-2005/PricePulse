@@ -8,7 +8,6 @@ export async function POST(req: NextRequest) {
     if (!url) return NextResponse.json({ error: "URL is required" }, { status: 400 });
 
     await connectDB();
-    // Optionally scrape immediately on submit or just store URL for scheduler
     return NextResponse.json({ message: "URL added for tracking" });
   } catch (err : any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
