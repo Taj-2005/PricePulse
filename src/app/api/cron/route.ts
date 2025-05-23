@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { TrackedProduct } from "@/models/trackedProduct";
+import { Product } from "@/models/product";
 import { scrapeProduct } from "@/lib/scraper";
 
 export async function GET() {
@@ -11,10 +12,17 @@ export async function GET() {
     for (const product of products) {
       try {
         const { title, price } = await scrapeProduct(product.url);
-        await Product.create({ url: product.url, title, price });
-        console.log("Updated product:", product.url);
-      } catch (error) {
-        console.error("Failed to scrape:", product.url);
+
+        await Product.create({
+          url: product.url,
+          title,
+          price,
+          timestamp: new Date(),
+        });
+
+        console.log("✅ Tracked:", product.url);
+      } catch (error : any) {
+        console.error("❌ Failed to scrape:", product.url, error.message);
       }
     }
 
