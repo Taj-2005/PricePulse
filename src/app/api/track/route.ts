@@ -6,29 +6,25 @@ import { scrapeProduct } from "@/lib/scraper";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const url = body?.url;
+    const { url, userEmail, targetPrice } = await req.json();
 
-    if (!url) {
-      return NextResponse.json({ error: "URL is required" }, { status: 400 });
-    }
+    if (!url) return NextResponse.json({ error: "URL is required" }, { status: 400 });
 
     await connectDB();
 
-
     await TrackedProduct.updateOne(
       { url },
-      { url },
+      { url, userEmail, targetPrice },
       { upsert: true }
     );
 
     const { title, price } = await scrapeProduct(url);
 
-    const saved = await Product.create({ url, title, price });
+    const saved = await Product.create({ url, title, price, timestamp: new Date() });
 
     return NextResponse.json(saved);
   } catch (err: any) {
     console.error("API /track error:", err.message);
-    return NextResponse.json({ error: err.message || "Unknown error" }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

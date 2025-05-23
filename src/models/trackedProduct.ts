@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 
-const trackedProductSchema = new mongoose.Schema({
-  url: { type: String, required: true, unique: true },
-  createdAt: { type: Date, default: Date.now },
+const TrackedProductSchema = new mongoose.Schema({
+  url: { type: String, required: true },
+  userEmail: { type: String },
+  targetPrice: { type: Number }, 
 });
 
-export const TrackedProduct = mongoose.models.TrackedProduct || mongoose.model("TrackedProduct", trackedProductSchema);
+export const TrackedProduct =
+  mongoose.models.TrackedProduct || mongoose.model("TrackedProduct", TrackedProductSchema);

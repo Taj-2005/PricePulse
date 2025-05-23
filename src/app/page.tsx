@@ -28,6 +28,8 @@ ChartJS.register(
 
 export default function Home() {
   const [url, setUrl] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [targetPrice, setTargetPrice] = useState("");
   const [status, setStatus] = useState("");
   const [product, setProduct] = useState<{ title: string; price: string } | null>(null);
   const [history, setHistory] = useState<{ price: string; timestamp: string }[]>([]);
@@ -42,7 +44,7 @@ export default function Home() {
       const res = await fetch("/api/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, userEmail, targetPrice: Number(targetPrice) }),
       });
 
       const text = await res.text();
@@ -118,7 +120,6 @@ export default function Home() {
     },
   };
 
-
   return (
     <main className="p-8 max-w-3xl mx-auto min-h-screen bg-white">
       <h1 className="text-3xl font-extrabold mb-8 text-gray-900 text-center select-none">PricePulse</h1>
@@ -138,11 +139,42 @@ export default function Home() {
           required
           autoComplete="off"
         />
+
+        <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
+          Your Email (to receive alerts)
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={userEmail}
+          onChange={(e) => setUserEmail(e.target.value)}
+          placeholder="you@example.com"
+          className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          required
+          autoComplete="email"
+        />
+
+        <label htmlFor="targetPrice" className="block text-gray-700 font-medium mb-2">
+          Target Price (₹)
+        </label>
+        <input
+          id="targetPrice"
+          type="number"
+          value={targetPrice}
+          onChange={(e) => setTargetPrice(e.target.value)}
+          placeholder="Enter price to get alert"
+          className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          min={1}
+          required
+        />
+
         <button
           type="submit"
-          disabled={!url}
+          disabled={!url || !userEmail || !targetPrice}
           className={`w-full rounded-md py-3 font-semibold text-white transition
-            ${url ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-300 cursor-not-allowed"}`}
+            ${url && userEmail && targetPrice ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-300 cursor-not-allowed"}`}
         >
           Track Price
         </button>
