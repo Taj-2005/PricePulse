@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { Product } from "@/models/product";
+import { TrackedProduct } from "@/models/trackedProduct";
 import { scrapeProduct } from "@/lib/scraper";
 
 export async function POST(req: NextRequest) {
@@ -13,6 +14,14 @@ export async function POST(req: NextRequest) {
     }
 
     await connectDB();
+
+
+    await TrackedProduct.updateOne(
+      { url },
+      { url },
+      { upsert: true }
+    );
+
     const { title, price } = await scrapeProduct(url);
 
     const saved = await Product.create({ url, title, price });
