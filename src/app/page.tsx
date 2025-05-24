@@ -3,6 +3,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import getFriendlyErrorMessage from "@/lib/errors";
+import Image from "next/image";
 
 import {
   Chart as ChartJS,
@@ -133,7 +134,16 @@ export default function Home() {
 
   return (
     <main className="p-8 max-w-3xl mx-auto min-h-screen bg-white">
-      <h1 className="text-3xl font-extrabold mb-8 text-gray-900 text-center select-none">PricePulse</h1>
+      <h1 className="text-3xl font-extrabold mb-8 text-gray-900 text-center select-none flex flex-row justify-start items-center gap-2">
+        <Image
+        src="/pricepulse.png"
+        width={50}
+        height={50}
+        alt="PricePulse Logo"
+        className="rounded-md shadow-xl"
+        />
+        PricePulse
+      </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <label htmlFor="url" className="block text-gray-700 font-medium mb-2">
@@ -154,7 +164,7 @@ export default function Home() {
         {!hideOptionalFields && (
             <>
               <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-                Your Email (optional) <span className="text-red-500 text-[0.8vw]">Kindly check the spam folder</span>
+                Your Email (optional) <span className="text-red-500 text-[1.3vh] lg:text-[0.8vw]">Kindly check the spam folder</span>
               </label>
               <input
                 id="email"
