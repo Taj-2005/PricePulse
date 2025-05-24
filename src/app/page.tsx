@@ -33,6 +33,8 @@ export default function Home() {
   const [status, setStatus] = useState("");
   const [product, setProduct] = useState<{ title: string; price: string } | null>(null);
   const [history, setHistory] = useState<{ price: string; timestamp: string }[]>([]);
+  const [hideOptionalFields, setHideOptionalFields] = useState(false);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,6 +74,7 @@ export default function Home() {
 
       const historyData = await historyRes.json();
       setHistory(historyData);
+      setHideOptionalFields(true);
     } catch (err: any) {
         console.error("Frontend error:", err.message);
         let friendlyMessage = getFriendlyErrorMessage(500); // default
@@ -148,33 +151,38 @@ export default function Home() {
           autoComplete="off"
         />
 
-        <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-          Your Email (optional) <span className="text-red-500 text-[0.8vw]">Kindly check the spam folder</span>
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={userEmail}
-          onChange={(e) => setUserEmail(e.target.value)}
-          placeholder="you@example.com"
-          className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-          autoComplete="email"
-        />
+        {!hideOptionalFields && (
+            <>
+              <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
+                Your Email (optional) <span className="text-red-500 text-[0.8vw]">Kindly check the spam folder</span>
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                autoComplete="email"
+              />
 
-        <label htmlFor="targetPrice" className="block text-gray-700 font-medium mb-2">
-          Target Price (optional)
-        </label>
-        <input
-          id="targetPrice"
-          type="number"
-          value={targetPrice}
-          onChange={(e) => setTargetPrice(e.target.value)}
-          placeholder="Enter price to get alert"
-          className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-          min={1}
-        />
+              <label htmlFor="targetPrice" className="block text-gray-700 font-medium mb-2">
+                Target Price (optional)
+              </label>
+              <input
+                id="targetPrice"
+                type="number"
+                value={targetPrice}
+                onChange={(e) => setTargetPrice(e.target.value)}
+                placeholder="Enter price to get alert"
+                className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                min={1}
+              />
+            </>
+          )}
+
 
         <button
           type="submit"
