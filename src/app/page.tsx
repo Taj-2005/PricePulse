@@ -132,39 +132,50 @@ export default function Home() {
     },
   };
 
-  return (
-    <main className="p-8 max-w-3xl mx-auto min-h-screen bg-white">
-      <h1 className="text-3xl font-extrabold mb-8 text-gray-900 text-center select-none flex flex-row justify-start items-center gap-2">
+return (
+  <main className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-white px-4 py-10 sm:px-6 lg:px-8">
+    <div className="max-w-3xl mx-auto space-y-10">
+      {/* Hero */}
+      <div className="flex items-center gap-4 justify-center">
         <Image
-        src="/pricepulse.png"
-        width={50}
-        height={50}
-        alt="PricePulse Logo"
-        className="rounded-md shadow-xl"
+          src="/pricepulse.png"
+          width={60}
+          height={60}
+          alt="PricePulse Logo"
+          className="rounded-xl shadow-lg"
         />
-        PricePulse
-      </h1>
+        <h1 className="text-4xl font-extrabold text-blue-700 drop-shadow-md">
+          PricePulse
+        </h1>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <label htmlFor="url" className="block text-gray-700 font-medium mb-2">
-          Amazon Product URL
-        </label>
-        <input
-          id="url"
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://www.amazon.in/your-product-url"
-          className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-          required
-          autoComplete="off"
-        />
+      {/* Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 bg-white/60 backdrop-blur-sm border border-blue-100 shadow-xl rounded-xl p-6 transition-all duration-300"
+      >
+        <div>
+          <label htmlFor="url" className="block text-gray-800 font-semibold mb-1">
+            Amazon Product URL
+          </label>
+          <input
+            id="url"
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://www.amazon.in/your-product-url"
+            className="w-full rounded-lg border px-4 py-3 placeholder-gray-400 text-gray-900 focus:ring-2 focus:ring-blue-500 transition"
+            required
+            autoComplete="off"
+            disabled={status === "Tracking..."}
+          />
+        </div>
 
         {!hideOptionalFields && (
-            <>
-              <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-                Your Email (optional) <span className="text-red-500 text-[1.3vh] lg:text-[0.8vw]">Kindly check the spam folder</span>
+          <>
+            <div>
+              <label htmlFor="email" className="block text-gray-800 font-semibold mb-1">
+                Your Email <span className="text-red-500 text-sm">(check spam folder)</span>
               </label>
               <input
                 id="email"
@@ -172,63 +183,69 @@ export default function Home() {
                 value={userEmail}
                 onChange={(e) => setUserEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full rounded-lg border px-4 py-3 placeholder-gray-400 text-gray-900 focus:ring-2 focus:ring-blue-500 transition"
                 autoComplete="email"
+                disabled={status === "Tracking..."}
               />
+            </div>
 
-              <label htmlFor="targetPrice" className="block text-gray-700 font-medium mb-2">
-                Target Price (optional)
+            <div>
+              <label htmlFor="targetPrice" className="block text-gray-800 font-semibold mb-1">
+                Target Price
               </label>
               <input
                 id="targetPrice"
                 type="number"
                 value={targetPrice}
                 onChange={(e) => setTargetPrice(e.target.value)}
-                placeholder="Enter price to get alert"
-                className="w-full rounded-md border border-gray-300 px-4 py-3 placeholder-gray-400 text-gray-900
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                placeholder="Enter your target price (₹)"
+                className="w-full rounded-lg border px-4 py-3 placeholder-gray-400 text-gray-900 focus:ring-2 focus:ring-blue-500 transition"
                 min={1}
+                disabled={status === "Tracking..."}
               />
-            </>
-          )}
-
+            </div>
+          </>
+        )}
 
         <button
           type="submit"
           disabled={!url}
-          className={`w-full rounded-md py-3 font-semibold text-white transition ${
-            (url && userEmail && targetPrice) || (url && !userEmail && !targetPrice) ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-300 cursor-not-allowed"
+          className={`w-full rounded-lg py-3 font-bold text-white tracking-wide transition-transform duration-300 ${
+            (url && (userEmail || !userEmail)) ? "bg-blue-600 hover:bg-blue-700 hover:scale-[1.02]" : "bg-blue-300 cursor-not-allowed"
           }`}
         >
-          Track Price
+          Track Price 🚀
         </button>
       </form>
 
+      {/* Status Message */}
       {status && (
         <p
-          className={`mt-6 text-center font-medium ${
+          className={`text-center font-semibold transition-all ${
             status.toLowerCase().includes("error") || status.toLowerCase().includes("fail")
               ? "text-red-600"
               : "text-green-600"
-          } select-text`}
+          }`}
         >
           {status}
         </p>
       )}
 
+      {/* Product Display */}
       {product && (
-        <section className="mt-10 p-6 bg-gray-50 rounded-lg shadow-sm border border-gray-200 flex flex-col items-center justify-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2 truncate">{product.title}</h2>
-          <p className="text-2xl font-extrabold text-green-700">₹ {product.price}</p>
+        <section className="mt-6 p-6 bg-gradient-to-r from-white via-blue-50 to-white rounded-lg border shadow-md flex flex-col items-center text-center">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800 truncate">{product.title}</h2>
+          <p className="text-3xl font-extrabold text-green-700 mt-2">₹ {product.price}</p>
         </section>
       )}
 
+      {/* Chart Display */}
       {history.length > 0 && (
-        <section className="mt-12 p-6 bg-white rounded-lg shadow-lg border border-gray-100">
+        <section className="mt-10 bg-white p-6 rounded-xl border border-gray-100 shadow-xl">
           <Line data={chartData} options={chartOptions} />
         </section>
       )}
-    </main>
-  );
+    </div>
+  </main>
+);
 }
