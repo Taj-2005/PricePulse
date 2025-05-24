@@ -144,7 +144,7 @@ return (
           alt="PricePulse Logo"
           className="rounded-xl shadow-lg"
         />
-        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">PricePulse</h1>
+        <h1 className=" text-4xl font-bold text-gray-900 tracking-tight">PricePulse</h1>
       </div>
 
       {/* Form */}
