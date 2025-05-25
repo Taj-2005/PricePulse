@@ -108,7 +108,7 @@ export default function Home() {
         borderColor: "#2563EB",
         backgroundColor: "#2563EB",
         tension: 0.3,
-        pointRadius: 4,
+        pointRadius: 0,
         pointHoverRadius: 6,
       },
     ],
