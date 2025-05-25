@@ -96,13 +96,14 @@ export default function Home() {
   };
 
   const chartData = {
-    labels: history.map((entry) => new Date(entry.timestamp).toLocaleString()),
+    labels: (history ?? []).map(entry => new Date(entry.timestamp).toLocaleString()),
     datasets: [
       {
         label: "Price (₹)",
-        data: history.map((entry) =>
-          parseFloat(entry.price.replace(/[^0-9.-]+/g, ""))
-        ),
+        data: (history ?? []).map(entry => {
+          const priceStr = entry?.price ?? "";
+          return parseFloat(priceStr.toString().replace(/[^0-9.-]+/g, "")) || 0;
+        }),
         fill: false,
         borderColor: "#2563EB",
         backgroundColor: "#2563EB",
@@ -112,6 +113,8 @@ export default function Home() {
       },
     ],
   };
+
+
 
   const chartOptions = {
     responsive: true,
