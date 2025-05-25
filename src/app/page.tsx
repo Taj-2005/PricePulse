@@ -235,7 +235,7 @@ return (
       {/* Product Display */}
       {product && (
         <section className="mt-6 p-6 bg-gradient-to-r from-white via-blue-50 to-white rounded-lg border shadow-md flex flex-col items-center text-center">
-          <h2 className="w-full text-lg sm:text-xl font-bold text-gray-800">{product.title}</h2>
+          <h2 className="w-full text-lg sm:text-xl font-bold text-gray-800 truncate">{product.title}</h2>
           <p className="text-3xl font-extrabold text-green-700 mt-2">₹ {product.price}</p>
         </section>
       )}
