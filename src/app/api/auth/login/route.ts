@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     await connectDB();
     const { email, password } = await req.json();
 
-    if (!email || !password) {
+    if (!email || !password) { 
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
 
@@ -25,7 +25,10 @@ export async function POST(req: Request) {
 
     const token = signJWT({ userId: user._id, email: user.email });
 
-    const response = NextResponse.json({ message: "Login successful" });
+    const response = NextResponse.json({ 
+      message: "Login successful", 
+      token,
+    });
 
     response.cookies.set({
       name: "token",

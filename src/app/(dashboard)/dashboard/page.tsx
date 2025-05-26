@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import LogoutBtn from "@/app/components/LogoutBtn";
-import TrackingForm from "@/app/components/TrackingForm";
 
 export default function Dashboard() {
   const [trackedProducts, setTrackedProducts] = useState<any[]>([]);
@@ -14,19 +13,31 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
+  const token = localStorage.getItem("token");
+  console.log("Token from localStorage:", token); // This should NOT be undefined/null
+  // rest of fetch code...
+}, []);
+
+
+  useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
+
+    if (!token || token === "undefined") {
+      toast.error("Please login to access dashboard");
       router.push("/login");
       return;
     }
 
+    console.log("Token before fetch:", token);
+
     fetch("/api/dashboard", {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
       .then(async (res) => {
         if (res.status === 401) {
           toast.error("Please login to access dashboard");
-          localStorage.removeItem("token");
           router.push("/login");
           return;
         }
@@ -34,39 +45,25 @@ export default function Dashboard() {
         return res.json();
       })
       .then((data) => {
-        console.log("Dashboard API data:", data);
-        // Expecting { trackedProducts: [...] } from API
-        if (data && Array.isArray(data.trackedProducts)) {
-          setTrackedProducts(data.trackedProducts);
-        } else {
-          setTrackedProducts([]);
-        }
+        if (Array.isArray(data)) setTrackedProducts(data);
+        else setTrackedProducts([]);
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
   }, [router]);
 
-  if (loading) {
-    return <p className="text-center mt-20 text-black">Loading...</p>;
-  }
+  if (loading) return <p className="text-center mt-20 text-black">Loading...</p>;
 
-  // If no tracked products, show message + TrackingForm (existing form)
-  if (trackedProducts.length === 0) {
+  if (!trackedProducts.length)
     return (
-      <>
-        <Navbar AuthButton={<LogoutBtn />} />
-        <p className="text-center text-black p-5 bg-white">
-          No tracked products found. Add some from the form below.
-        </p>
-        <TrackingForm />
-      </>
+      <p className="text-center text-black p-4">
+        No tracked products found. Add some from the main page.
+      </p>
     );
-  }
 
   return (
     <>
       <Navbar AuthButton={<LogoutBtn />} />
-
       <main className="max-w-5xl mx-auto px-4 py-10 text-black">
         <h1 className="text-3xl font-bold mb-6">Your Tracked Products</h1>
 
@@ -120,17 +117,12 @@ export default function Dashboard() {
                   />
                 )}
                 <Line data={chartData} options={{ responsive: true }} />
-                  <p className="mt-2 font-semibold text-green-700">
-                    Current Price: ₹{" "}
-                    {item.product?.price ? item.product.price : "N/A (not linked)"}
-                  </p>
+                <p className="mt-2 font-semibold text-green-700">
+                  Current Price: ₹ {item.product?.price || "N/A"}
+                </p>
               </div>
             );
           })}
-        </div>
-
-        <div className="mt-12">
-          <TrackingForm />
         </div>
       </main>
     </>

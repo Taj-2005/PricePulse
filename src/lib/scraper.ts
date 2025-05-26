@@ -1,10 +1,7 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-export async function scrapeProduct(url: string, retries = 3): Promise<{
-  _id: any;
-  image: null;title: string, price: string
-}> {
+export async function scrapeProduct(url: string, retries = 3): Promise<{title: string, price: string}> {
   const apiKey = process.env.SCRAPER_API_KEY;
   if (!apiKey) throw new Error("Missing SCRAPER_API_KEY");
 
