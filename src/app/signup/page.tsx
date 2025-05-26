@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-export default function RegisterPage() {
+export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -18,7 +18,7 @@ export default function RegisterPage() {
       return;
     }
 
-    const res = await fetch("/api/auth/register", {
+    const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -38,7 +38,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-white flex flex-row justify-center items-center">
         <main className="max-w-md mx-auto p-6 border rounded-lg shadow-lg text-black">
-            <h1 className="text-2xl font-bold mb-6">Register</h1>
+            <h1 className="text-center text-2xl font-bold mb-6">Sign Up</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input
                 type="email"

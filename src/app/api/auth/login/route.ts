@@ -1,8 +1,9 @@
 import bcrypt from "bcrypt";
 import User from "@/models/User";
-import {connectDB} from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { signJWT } from "@/lib/auth";
+import { cookies } from "next/headers"; // ✅
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
 
     const user = await User.findOne({ email });
     if (!user || !user.passwordHash) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
@@ -25,8 +26,18 @@ export async function POST(req: Request) {
 
     const token = signJWT({ userId: user._id, email: user.email });
 
-    // Send token in HTTP-only cookie (optional: here we send in JSON for frontend storage)
-    return NextResponse.json({ token });
+    const response = NextResponse.json({ message: "Login successful" });
+    (await cookies()).set({
+      name: "token",
+      value: token,
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return response;
   } catch (error: any) {
     console.error("Login error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
