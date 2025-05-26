@@ -3,7 +3,6 @@ import User from "@/models/User";
 import { connectDB } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { signJWT } from "@/lib/auth";
-import { cookies } from "next/headers"; // ✅
 
 export async function POST(req: Request) {
   try {
@@ -27,11 +26,12 @@ export async function POST(req: Request) {
     const token = signJWT({ userId: user._id, email: user.email });
 
     const response = NextResponse.json({ message: "Login successful" });
-    (await cookies()).set({
+
+    response.cookies.set({
       name: "token",
       value: token,
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
