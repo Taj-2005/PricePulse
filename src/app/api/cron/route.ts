@@ -1,5 +1,3 @@
-// src/app/api/cron/route.ts
-
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import TrackedProduct from "@/models/trackedProduct";
