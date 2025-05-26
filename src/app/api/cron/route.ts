@@ -2,8 +2,8 @@
 
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import { TrackedProduct } from "@/models/trackedProduct";
-import { Product } from "@/models/product";
+import TrackedProduct from "@/models/trackedProduct";
+import Product from "@/models/product";
 import { scrapeProduct } from "@/lib/scraper";
 import { sendEmail } from "@/lib/sendEmail";
 
