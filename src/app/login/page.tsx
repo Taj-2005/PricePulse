@@ -60,8 +60,8 @@ export default function Login() {
             </form>
             <p className="mt-4 text-center">
                 Don't have an account?{" "}
-                <a href="/register" className="text-blue-600 underline">
-                Register
+                <a href="/signup" className="text-blue-600 underline">
+                Sign Up
                 </a>
             </p>
         </main>
