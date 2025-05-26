@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import LogoutBtn from "@/app/components/LogoutBtn";
+import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
   const [trackedProducts, setTrackedProducts] = useState<any[]>([]);
@@ -52,7 +53,7 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, [router]);
 
-  if (loading) return <p className="text-center mt-20 text-black">Loading...</p>;
+  if (loading) return <div className="flex flex-row items-center justify-center"><Loader2 className="animate-spin h-10 w-10 text-blue-400 text-center" /></div>;
 
   if (!trackedProducts.length)
     return (
