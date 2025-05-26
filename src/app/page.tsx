@@ -3,7 +3,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import getFriendlyErrorMessage from "@/lib/errors";
-import Image from "next/image";
 
 import {
   Chart as ChartJS,
@@ -138,19 +137,6 @@ export default function Home() {
 return (
   <main className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-white px-4 py-10 sm:px-6 lg:px-8">
     <div className="max-w-3xl mx-auto space-y-10">
-      {/* Hero */}
-      <div className="flex items-center gap-4 justify-center">
-        <Image
-          src="/pricepulse.png"
-          width={60}
-          height={60}
-          alt="PricePulse Logo"
-          className="rounded-xl shadow-lg"
-        />
-        <h1 className=" text-4xl font-bold text-gray-900 tracking-tight">PricePulse</h1>
-      </div>
-
-      {/* Form */}
       <form
         onSubmit={handleSubmit}
         className="space-y-6 bg-white/60 backdrop-blur-sm border border-blue-100 shadow-xl rounded-xl p-6 transition-all duration-300"
@@ -215,11 +201,10 @@ return (
             (url && (userEmail || !userEmail)) ? "bg-blue-600 hover:bg-blue-700 hover:scale-[1.02]" : "bg-blue-300 cursor-not-allowed"
           }`}
         >
-          Track Price 🚀
+          Track Price
         </button>
       </form>
 
-      {/* Status Message */}
       {status && (
         <p
           className={`text-center font-semibold transition-all ${
@@ -232,7 +217,6 @@ return (
         </p>
       )}
 
-      {/* Product Display */}
       {product && (
         <section className="mt-6 p-6 bg-gradient-to-r from-white via-blue-50 to-white rounded-lg border shadow-md flex flex-col items-center text-center">
           <h2 className="w-full text-lg sm:text-xl font-bold text-gray-800 truncate">{product.title}</h2>
@@ -240,7 +224,6 @@ return (
         </section>
       )}
 
-      {/* Chart Display */}
       {history.length > 0 && (
         <section className="mt-10 bg-white p-6 rounded-xl border border-gray-100 shadow-xl">
           <Line data={chartData} options={chartOptions} />
