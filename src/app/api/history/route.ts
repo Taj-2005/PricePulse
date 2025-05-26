@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { Product } from "@/models/product";
+import Product from "@/models/product";
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 

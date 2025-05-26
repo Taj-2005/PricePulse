@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import { TrackedProduct } from "@/models/trackedProduct";
-import { Product } from "@/models/product";
+import TrackedProduct from "@/models/trackedProduct";
+import Product from "@/models/product";
 import { scrapeProduct } from "@/lib/scraper";
 import { NextRequest } from "next/server";
 import { sendEmail } from "@/lib/sendEmail";
+import product from "@/models/product";
 
 export async function POST(req: NextRequest) {
   await connectDB();
@@ -23,9 +24,10 @@ export async function POST(req: NextRequest) {
 
     // Save price snapshot
     await Product.create({
-      url,
       title: scraped.title,
+      image: scraped.image,
       price: scraped.price,
+      history: [{ price: scraped.price, timestamp: new Date() }],
     });
 
     // Track product for future cron jobs
@@ -33,8 +35,9 @@ export async function POST(req: NextRequest) {
     if (!existing) {
       await TrackedProduct.create({
         url,
-        userEmail: userEmail || null,
-        targetPrice: targetPrice || null,
+        userEmail,
+        targetPrice,
+        product: scraped._id,
       });
     }
 

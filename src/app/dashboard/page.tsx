@@ -120,9 +120,10 @@ export default function Dashboard() {
                   />
                 )}
                 <Line data={chartData} options={{ responsive: true }} />
-                <p className="mt-2 font-semibold text-green-700">
-                  Current Price: ₹ {item.product?.price || "N/A"}
-                </p>
+                  <p className="mt-2 font-semibold text-green-700">
+                    Current Price: ₹{" "}
+                    {item.product?.price ? item.product.price : "N/A (not linked)"}
+                  </p>
               </div>
             );
           })}

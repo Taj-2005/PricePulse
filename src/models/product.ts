@@ -1,10 +1,15 @@
 import mongoose from "mongoose";
 
-const productSchema = new mongoose.Schema({
-  url: String,
+const ProductSchema = new mongoose.Schema({
   title: String,
-  price: String,
-  timestamp: { type: Date, default: Date.now },
+  price: Number,
+  history: [
+    {
+      price: Number,
+      timestamp: Date,
+    },
+  ],
 });
 
-export const Product = mongoose.models.Product || mongoose.model("Product", productSchema);
+export default mongoose.models.Product ||
+  mongoose.model("Product", ProductSchema);

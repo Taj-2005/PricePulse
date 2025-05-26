@@ -2,6 +2,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 
 export async function scrapeProduct(url: string, retries = 3): Promise<{
+  _id: any;
   image: null;title: string, price: string
 }> {
   const apiKey = process.env.SCRAPER_API_KEY;
