@@ -32,29 +32,35 @@ export async function GET() {
               timestamp: new Date(),
             });
 
+            // Update currentPrice in TrackedProduct document
+            const currentPriceNum = parseFloat(price.replace(/[^0-9.]/g, ""));
+            if (!isNaN(currentPriceNum)) {
+              await TrackedProduct.updateOne(
+                { _id: product._id },
+                { currentPrice: currentPriceNum, title }
+              );
+            }
+
             console.log(`✅ Tracked: ${title} @ ${price}`);
 
             // Check and send email if alert conditions are met
-            const currentPrice = parseFloat(price.replace(/[^0-9.]/g, ""));
-            console.log("Ni yabba reyyy" + currentPrice)
-            console.log("Attempting to send email to:", product.userEmail);
             const target = product.targetPrice;
 
             if (
               product.userEmail &&
               target &&
-              !isNaN(currentPrice) &&
-              currentPrice <= target
+              !isNaN(currentPriceNum) &&
+              currentPriceNum <= target
             ) {
               await sendEmail(
                 product.userEmail,
                 "Price Drop Alert",
-                `The product "${title}" is now ₹${currentPrice}, which is below your target of ₹${target}.\n\nProduct link: ${product.url}`
+                `The product "${title}" is now ₹${currentPriceNum}, which is below your target of ₹${target}.\n\nProduct link: ${product.url}`
               );
               console.log(`📧 Email sent to ${product.userEmail}`);
             } else {
               console.log(
-                `ℹ️ No email: ${title} @ ₹${currentPrice} (target: ₹${target})`
+                `ℹ️ No email: ${title} @ ₹${currentPriceNum} (target: ₹${target})`
               );
             }
           } catch (error: any) {

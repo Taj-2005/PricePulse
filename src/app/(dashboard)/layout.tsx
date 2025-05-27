@@ -2,7 +2,7 @@ import { Toaster } from "react-hot-toast";
 import Navbar from "@/app/components/Navbar";
 import LogoutBtn from "@/app/components/LogoutBtn";
 import { Metadata } from "next";
-import TrackingForm from "@/app/components/TrackingForm";
+import TrackedList from "@/app/components/TrackedList";
 
 export const metadata: Metadata = {
   title: "PricePulse",
@@ -20,7 +20,6 @@ export default function DashboardLayout({
       <Navbar AuthButton={<LogoutBtn />} />
       <div className="bg-white">{children}</div>
       <Toaster position="top-right" />
-      <TrackingForm />
     </>
   );
 }

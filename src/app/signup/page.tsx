@@ -32,6 +32,7 @@ export default function SignupPage() {
 
     if (!res.ok) {
       toast.error(data.error || "Registration failed");
+      setLogging(false);
       return;
     }
 

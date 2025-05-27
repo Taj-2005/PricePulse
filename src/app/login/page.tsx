@@ -26,6 +26,7 @@ export default function Login() {
 
     if (!res.ok) {
       toast.error(data.error || "Login failed");
+      setLogging(false);
       return;
     }
 

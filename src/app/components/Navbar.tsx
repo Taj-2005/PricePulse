@@ -10,7 +10,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ AuthButton }) => {
   return (
-    <div className="w-full bg-white px-6 py-3 flex items-center justify-between shadow-2xl border-b-1 border-slate-300">
+    <div className="w-full bg-white px-6 py-3 flex items-center justify-between shadow-lg border-b border-slate-300 sticky top-0 z-50">
       {/* Logo + Title */}
       <div className="flex items-center gap-4">
         <Image
@@ -20,12 +20,11 @@ const Navbar: React.FC<NavbarProps> = ({ AuthButton }) => {
           alt="PricePulse Logo"
           className="rounded-lg shadow"
         />
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold font-archivo text-gray-800 tracking-tight">
           PricePulse
         </h1>
       </div>
 
-      {/* Dynamic Auth Button */}
       {AuthButton}
     </div>
   );
