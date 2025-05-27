@@ -243,7 +243,7 @@ const TrackingForm = () => {
                 ((url && !userEmail && !targetPrice) || (url && userEmail && targetPrice)) ? "bg-blue-600 hover:bg-blue-700 hover:scale-[1.02]" : "bg-blue-300 cursor-not-allowed"
               }`}
             >
-              Track Price
+              {status === "Tracking..." ? <div className="flex flex-row justify-center items-center gap-2"><Loader2 className="text-white text-center animate-spin"/><span>Tracking...</span></div> : "Track Product"}
             </button>
           </form>
 
