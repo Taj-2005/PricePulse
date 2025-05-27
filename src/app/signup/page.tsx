@@ -3,14 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [logging, setLogging] = useState(false);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
+    setLogging(true);
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -36,9 +40,18 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-row justify-center items-center">
-        <main className="max-w-md mx-auto p-6 border rounded-lg shadow-lg text-black">
-            <h1 className="text-center text-2xl font-bold mb-6">Sign Up</h1>
+    <div className="min-h-screen bg-white flex flex-row-reverse gap-10 justify-center items-center">
+        <div className="items-center gap-4 hidden lg:flex">
+          <Image
+            src="/login.jpeg"
+            width={500}
+            height={500}
+            alt="PricePulse Logo"
+            className="rounded-lg"
+          />
+        </div>
+        <main className="m-5 p-10 border rounded-lg shadow-xl text-black bg-white max-w-md">
+            <h1 className="text-2xl font-bold mb-6 text-center">Sign Up</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input
                 type="email"
@@ -66,9 +79,9 @@ export default function SignupPage() {
                 />
                 <button
                 type="submit"
-                className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
-                Register
+                {!logging ? "Sign Up" : <div className="flex flex-row items-center justify-center"><Loader2 className="animate-spin h-10 w-10 text-blue-400 text-center" /></div>}
                 </button>
             </form>
             <p className="mt-4 text-center">
