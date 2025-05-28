@@ -246,20 +246,30 @@ const TrackingForm = () => {
               {status === "Tracking..." ? <div className="flex flex-row justify-center items-center gap-2"><Loader2 className="text-white text-center animate-spin"/><span>Tracking...</span></div> : "Track Product"}
             </button>
           </form>
+          {status && (
+            <p
+              className={`text-center font-semibold transition-all ${
+                status.toLowerCase().includes("error") || status.toLowerCase().includes("fail")
+                  ? "text-red-600"
+                  : "text-green-600"
+              }`}
+            >
+              {status}
+            </p>
+          )}
 
           {product && (
-            <>
-              <div className="text-center mt-4 text-gray-800">
-                <h3 className="text-xl font-semibold mb-1">{product.title}</h3>
-                <p className="text-lg font-bold">{product.price}</p>
-              </div>
-              {history && history.length > 0 && (
-                <div className="mt-6 bg-white/60 backdrop-blur-sm border border-blue-100 rounded-xl p-6 shadow-xl">
-                  <Line options={chartOptions} data={chartData} />
-                </div>
-              )}
-            </>
+            <section className="mt-6 p-6 bg-gradient-to-r from-white via-blue-50 to-white rounded-lg border-blue-50 shadow-2xl flex flex-col items-center text-center">
+              <h2 className="w-full text-lg sm:text-xl font-bold text-gray-800 truncate">{product.title}</h2>
+              <p className="text-3xl font-extrabold text-green-700 mt-2">₹ {product.price}</p>
+            </section>
           )}
+
+        {history.length > 0 && (
+          <section className="mt-10 bg-white p-6 rounded-xl border border-gray-100 shadow-xl">
+            <Line data={chartData} options={chartOptions} />
+          </section>
+        )}
         </div>
       </main>
     </>
