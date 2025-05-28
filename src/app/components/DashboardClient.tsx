@@ -146,10 +146,10 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
     <div className="flex flex-col items-center min-h-screen w-full p-6 bg-gradient-to-br from-white via-blue-50 to-white text-gray-900">
       <div className="w-full max-w-5xl space-y-6">
         <div className="text-center">
-          <h1 className="text-5xl font-bold text-blue-700 tracking-tight flex justify-center items-center gap-2 animate-pulse font-archivo">
+          <h1 className="text-4xl md:text-5xl font-bold text-blue-700 tracking-tight flex justify-center items-center gap-2 animate-pulse font-archivo">
             Welcome to Your Dashboard
           </h1>
-          <p className="text-gray-600 mt-2">Track your favorite products and stay ahead of the best deals!</p>
+          <p className="text-gray-600 mt-2 text-sm md:text-xl">Track your favorite products and stay ahead of the best deals!</p>
         </div>
 
         {loading && (
@@ -164,7 +164,7 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
 
         {!loading && !showForm && products.length > 0 && (
           <div className="space-y-6">
-            <div className="text-center text-gray-700 text-lg">
+            <div className="text-center text-gray-700 text-sm md:text-lg">
               Here are the products you’re currently tracking. Want to add more?
             </div>
 

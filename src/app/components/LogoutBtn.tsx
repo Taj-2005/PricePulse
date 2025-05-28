@@ -5,10 +5,10 @@ import { signOut } from 'next-auth/react';
 
 const Logout = () => {
   return (
-    <div className='flex flex-row justify-center items-center gap-4'>
+    <div className='flex flex-row justify-center items-center gap-1 md:gap-4'>
       <button
         onClick={() => signOut()}
-        className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-400 text-white font-medium rounded-md shadow transition-colors duration-200"
+        className="flex items-center gap-2 md:px-4 md:py-2 px-2 py-1 bg-red-500 hover:bg-red-400 text-white font-medium rounded-md shadow transition-colors duration-200"
       >
         <span>Logout</span>
         <LogOut className="w-5 h-5" />

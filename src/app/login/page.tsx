@@ -46,7 +46,7 @@ export default function Login() {
               className="rounded-lg"
             />
         </div>
-        <main className="p-10 border rounded-lg shadow-xl text-black bg-white">
+        <main className="p-10 border rounded-lg shadow-xl text-black bg-white mx-4">
             <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input

@@ -34,7 +34,7 @@ const TrackedList: React.FC<TrackedListProps> = ({ products, handleClick }) => {
             {product.title}
           </h3>
           <p className="text-sm text-gray-600 truncate">{product.url}</p>
-          <p className="text-black">{product.currentPrice}</p>
+          <p className="text-black">₹ {product.currentPrice}</p>
           {loadingProductId === product._id && (
             <div className="flex items-center gap-2 mt-2">
               <Loader2 className="animate-spin text-blue-500" />
