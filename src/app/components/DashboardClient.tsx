@@ -144,7 +144,7 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
 
   return (
     <div className="flex flex-col items-center min-h-screen w-full p-6 bg-gradient-to-br from-white via-blue-50 to-white text-gray-900">
-      <div className="w-full max-w-5xl space-y-6">
+      <div className="min-w-screen max-w-5xl space-y-6">
         <div className="text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-blue-700 tracking-tight flex justify-center items-center gap-2 animate-pulse font-archivo">
             Welcome to Your Dashboard
@@ -183,7 +183,7 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
         )}
 
         {!loading && showForm && (
-          <div className="bg-white p-6 rounded-xl shadow-xl w-full mx-auto">
+          <div className="bg-gradient from-white via-blue-50 to-white p-6 rounded-xl shadow-xl w-full mx-auto">
             <p className="mb-4 text-center text-gray-700 font-medium">
               {products.length === 0
                 ? "Start tracking your first product now!"
