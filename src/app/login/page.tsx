@@ -36,10 +36,10 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-row gap-10 justify-center items-center">
+    <div className="min-h-screen bg-white flex flex-row justify-center items-center gap-10">
           <div className="hidden lg:flex items-center gap-4">
             <Image
-              src="/login.jpeg"
+              src="/login.svg"
               width={500}
               height={500}
               alt="PricePulse Logo"

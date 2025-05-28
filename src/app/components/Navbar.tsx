@@ -14,15 +14,12 @@ const Navbar: React.FC<NavbarProps> = ({ AuthButton }) => {
       {/* Logo + Title */}
       <div className="flex items-center gap-4">
         <Image
-          src="/pricepulse.png"
-          width={50}
-          height={50}
+          src="/pricepulse4.png"
+          width={100}
+          height={100}
           alt="PricePulse Logo"
-          className="rounded-lg shadow"
+          className="rounded-lg"
         />
-        <h1 className="text-2xl sm:text-3xl font-bold font-archivo text-gray-800 tracking-tight">
-          PricePulse
-        </h1>
       </div>
 
       {AuthButton}

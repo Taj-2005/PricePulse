@@ -44,9 +44,9 @@ export default function SignupPage() {
     <div className="min-h-screen bg-white flex flex-row-reverse gap-10 justify-center items-center">
         <div className="items-center gap-4 hidden lg:flex">
           <Image
-            src="/login.jpeg"
-            width={500}
-            height={500}
+            src="/signup.svg"
+            width={700}
+            height={700}
             alt="PricePulse Logo"
             className="rounded-lg"
           />
