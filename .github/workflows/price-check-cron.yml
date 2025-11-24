@@ -1,11 +1,9 @@
 name: Price Check Cron Job
 
-# This workflow runs every 30 minutes to check product prices
+# Runs automatically every 30 minutes
 on:
   schedule:
-    # Runs every 30 minutes: */30 * * * *
-    - cron: '*/30 * * * *'
-  # Allow manual triggering from GitHub Actions tab
+    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -13,19 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Call Price Check API
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          # Get your app URL from environment secrets or use your deployed URL
-          APP_URL="${{ secrets.APP_URL || 'https://your-app.vercel.app' }}"
-          CRON_SECRET="${{ secrets.CRON_SECRET }}"
-          
+          echo "📡 Calling: $APP_URL/api/cron"
+
           if [ -z "$CRON_SECRET" ]; then
-            echo "⚠️ Warning: CRON_SECRET not set. The API endpoint should still work if it doesn't require authentication."
-            curl -X GET "${APP_URL}/api/cron"
+            echo "⚠️ CRON_SECRET not found! Calling without authentication..."
+            curl -i -X GET "$APP_URL/api/cron"
           else
-            curl -X GET "${APP_URL}/api/cron?secret=${CRON_SECRET}"
+            echo "🔐 Using secret authentication"
+            curl -i -X GET "$APP_URL/api/cron" \
+              -H "x-cron-secret: $CRON_SECRET"
           fi
-          
+
       - name: Check Response
         run: |
-          echo "✅ Price check completed at $(date)"
-
+          echo "✅ Price check workflow finished at $(date)"
