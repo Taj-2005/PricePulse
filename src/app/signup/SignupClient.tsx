@@ -71,7 +71,7 @@ export default function SignupClient() {
                 width={600}
                 height={600}
                 alt="Sign up illustration"
-                className="rounded-2xl shadow-2xl"
+                className="rounded-2xl"
                 priority
                 quality={90}
               />

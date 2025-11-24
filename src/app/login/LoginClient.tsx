@@ -83,7 +83,7 @@ export default function LoginClient() {
                 width={600}
                 height={600}
                 alt="Login illustration"
-                className="rounded-2xl shadow-2xl"
+                className="rounded-2xl"
                 priority
                 quality={90}
               />

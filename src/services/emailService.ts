@@ -1,3 +1,4 @@
+// emailService.ts (update sendEmail)
 import nodemailer from "nodemailer";
 
 export interface EmailOptions {
@@ -7,15 +8,11 @@ export interface EmailOptions {
   text: string;
 }
 
-// Create reusable transporter
 let transporter: nodemailer.Transporter | null = null;
 
 function getTransporter() {
-  if (transporter) {
-    return transporter;
-  }
+  if (transporter) return transporter;
 
-  // Check for required environment variables
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
     throw new Error("SMTP configuration is missing. Please set SMTP_HOST, SMTP_USER, and SMTP_PASS");
   }
@@ -23,11 +20,13 @@ function getTransporter() {
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT || "587"),
-    secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
+    secure: process.env.SMTP_SECURE === "true",
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    // helpful for debugging TLS issues in some environments (optional)
+    // tls: { rejectUnauthorized: false },
   });
 
   return transporter;
@@ -42,21 +41,30 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
 
   try {
     const mailTransporter = getTransporter();
-    
-    await mailTransporter.sendMail({
+
+    const info = await mailTransporter.sendMail({
       from: process.env.SMTP_FROM_EMAIL,
       to,
       subject,
       text,
       html: html || text,
     });
-    
-    console.log(`📧 Email sent successfully to ${to}`);
+
+    // VERY IMPORTANT: log provider response for debugging
+    console.log("📧 Email send info:", {
+      messageId: info.messageId,
+      accepted: info.accepted,
+      rejected: info.rejected,
+      response: info.response,
+    });
+
   } catch (error: any) {
-    console.error("❌ Email send error:", error.message);
-    throw new Error(`Failed to send email: ${error.message}`);
+    console.error("❌ Email send error (sendEmail):", error);
+    // rethrow so caller knows it failed (your checkAndSendAlert already catches this)
+    throw new Error(`Failed to send email: ${error.message || error}`);
   }
 }
+
 
 export async function sendPriceAlertEmail(
   email: string,

@@ -26,6 +26,7 @@ jobs:
               -H "x-cron-secret: $CRON_SECRET"
           fi
 
+
       - name: Check Response
         run: |
           echo "✅ Price check workflow finished at $(date)"
