@@ -71,14 +71,59 @@ export async function sendPriceAlertEmail(
   const subject = "📉 Price Drop Alert from PricePulse!";
   const text = `Great news! The price of "${productTitle}" has dropped to ₹${currentPrice}, which is below your target price of ₹${targetPrice}.\n\nProduct Link: ${productUrl}\n\nHappy Shopping! 🛒`;
   
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #2563EB;">📉 Price Drop Alert!</h2>
-      <p>Great news! The price of <strong>"${productTitle}"</strong> has dropped to <strong style="color: #10B981;">₹${currentPrice}</strong>, which is below your target price of ₹${targetPrice}.</p>
-      <p><a href="${productUrl}" style="background-color: #2563EB; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">View Product on Amazon</a></p>
-      <p style="color: #6B7280; font-size: 12px; margin-top: 20px;">Happy Shopping! 🛒</p>
+const html = `
+  <div style="font-family: Arial, sans-serif; background:#f8fafc; padding:20px;">
+    <div style="max-width:560px; margin:0 auto; background:#ffffff; padding:25px 30px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+
+      <h2 style="color:#1d4ed8; margin-top:0; font-size:22px; font-weight:700; text-align:center;">
+        📉 Price Drop Alert
+      </h2>
+
+      <p style="font-size:15px; color:#374151; line-height:1.6;">
+        Hi there! 👋<br><br>
+        The price of <strong style="color:#1f2937;">${productTitle}</strong> has dropped!
+      </p>
+
+      <div style="margin:18px 0; padding:15px; background:#f1f5f9; border-radius:10px;">
+        <p style="margin:0; font-size:15px; color:#1e293b;">
+          Current Price:  
+          <strong style="color:#059669; font-size:17px;">₹${currentPrice}</strong><br>
+          Your Target Price:  
+          <strong style="color:#dc2626;">₹${targetPrice}</strong>
+        </p>
+      </div>
+
+      <p style="font-size:14px; color:#475569; line-height:1.6;">
+        Since the current price is now below your alert threshold, this could be the perfect time to grab the deal! 🎉
+      </p>
+
+      <div style="text-align:center; margin:25px 0;">
+        <a href="${productUrl}"
+          style="
+            background:#1d4ed8;
+            color:#ffffff;
+            padding:12px 22px;
+            border-radius:8px;
+            text-decoration:none;
+            font-size:15px;
+            font-weight:600;
+            display:inline-block;
+          "
+        >
+          View Product on Amazon
+        </a>
+      </div>
+
+      <hr style="border:none; border-top:1px solid #e2e8f0; margin:25px 0;">
+
+      <p style="font-size:12px; color:#6b7280; text-align:center;">
+        You’re receiving this alert because you set a price threshold on <strong>PricePulse</strong>.<br>
+        Happy Shopping! 🛒
+      </p>
     </div>
-  `;
+  </div>
+`;
+
 
   await sendEmail({ to: email, subject, text, html });
 }

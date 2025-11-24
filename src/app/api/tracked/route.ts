@@ -4,10 +4,6 @@ import { connectDB } from "@/lib/mongodb";
 import TrackedProduct from "@/models/trackedProduct";
 import { verifyJWT } from "@/lib/verifyJWT";
 
-/**
- * GET /api/tracked?userEmail=xxx
- * Get all tracked products, optionally filtered by userEmail
- */
 export async function GET(request: NextRequest) {
   try {
     await connectDB();

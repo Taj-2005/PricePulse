@@ -1,12 +1,11 @@
 import mongoose, { Schema } from "mongoose";
 
 const priceHistorySchema = new Schema({
-  productUrl: { type: String, required: true }, // removed index: true
+  productUrl: { type: String, required: true },
   price: { type: Number, required: true },
   timestamp: { type: Date, default: Date.now },
 });
 
-// Keep only THIS single index definition
 priceHistorySchema.index({ productUrl: 1, timestamp: -1 });
 
 export const PriceHistory =

@@ -22,11 +22,11 @@ const Logout = () => {
       }
 
       toast.success('Logged out successfully');
-      router.push('/login');
+      router.push('/');
       router.refresh();
     } catch (error) {
       toast.error('Failed to sign out');
-      router.push('/login');
+      router.push('/');
       router.refresh();
     }
   };
