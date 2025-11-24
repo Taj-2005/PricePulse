@@ -5,6 +5,7 @@ This guide explains how to set up automated price checking and alerting for your
 ## Overview
 
 PricePulse automatically:
+
 - ✅ Checks prices of all tracked products every **30 minutes**
 - ✅ Updates price history in the database
 - ✅ Sends email alerts when prices drop below target prices
@@ -21,10 +22,11 @@ GitHub Actions is **completely free** for public repositories and offers 2000 fr
 1. **The workflow file is already created!** ✅ Check `.github/workflows/price-check-cron.yml`
 
 2. **Add GitHub Secrets:**
+
    - Go to your GitHub repo → Settings → Secrets and variables → Actions
    - Click "New repository secret"
    - Add these secrets:
-     - `APP_URL`: Your deployed app URL (e.g., `https://your-app.vercel.app`)
+     - `APP_URL`: Your deployed app URL (e.g., `https://amazon-pricepulse.vercel.app`)
      - `CRON_SECRET`: Generate with `openssl rand -base64 32`
 
 3. **Push to GitHub** - The workflow will automatically start running every 30 minutes!
@@ -35,6 +37,7 @@ GitHub Actions is **completely free** for public repositories and offers 2000 fr
    - Click on it to see execution logs
 
 **Benefits:**
+
 - ✅ Completely free for public repos
 - ✅ 2000 free minutes/month for private repos (more than enough!)
 - ✅ Built-in logging and monitoring
@@ -48,6 +51,7 @@ GitHub Actions is **completely free** for public repositories and offers 2000 fr
 1. **Sign up** at [cron-job.org](https://cron-job.org/) (free account)
 
 2. **Create a new cron job:**
+
    - **Title**: PricePulse Price Checker
    - **URL**: `https://your-domain.com/api/cron?secret=YOUR_CRON_SECRET`
    - **Schedule**: `*/30 * * * *` (every 30 minutes)
@@ -64,6 +68,7 @@ GitHub Actions is **completely free** for public repositories and offers 2000 fr
 1. **Sign up** at [EasyCron](https://www.easycron.com/)
 
 2. **Create a new cron job:**
+
    - **URL**: `https://your-domain.com/api/cron?secret=YOUR_CRON_SECRET`
    - **Cron Expression**: `*/30 * * * *`
    - **HTTP Method**: GET
@@ -77,6 +82,7 @@ GitHub Actions is **completely free** for public repositories and offers 2000 fr
 1. **Sign up** at [UptimeRobot](https://uptimerobot.com/)
 
 2. **Create a new monitor:**
+
    - **Monitor Type**: HTTP(s)
    - **URL**: `https://your-domain.com/api/cron?secret=YOUR_CRON_SECRET`
    - **Monitoring Interval**: 30 minutes
@@ -94,16 +100,17 @@ npm run cron:dev
 ```
 
 This will:
+
 - Run price checks every 30 minutes
 - Execute an initial check immediately
 - Keep running until you stop it (Ctrl+C)
 
 **Requirements:**
+
 - Make sure `.env.local` has all required variables:
   - `MONGODB_URI`
   - `SCRAPER_API_KEY`
   - `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM_EMAIL`
-
 
 ## Security
 
@@ -113,7 +120,8 @@ The cron endpoint is protected by a secret token:
 - **External Services**: Use the `?secret=YOUR_CRON_SECRET` query parameter
 - **Local Testing**: No authentication needed (development only)
 
-**Important**: 
+**Important**:
+
 - Never commit your `CRON_SECRET` to version control!
 - Use GitHub Secrets for GitHub Actions (Settings → Secrets → Actions)
 - Keep your secret secure and rotate it periodically
@@ -132,23 +140,27 @@ The cron endpoint is protected by a secret token:
 ### Check Cron Job Status
 
 **GitHub Actions:**
+
 - Go to your repo → Actions tab
 - Click on "Price Check Cron Job" workflow
 - View execution history, logs, and timing
 
 **External Services:**
+
 - Check the service dashboard for execution logs
 - Monitor your application logs for scheduler output
 
 ### View Execution Logs
 
 The scheduler logs detailed information:
+
 - ✅ Number of products processed
 - ✅ Success/failure counts
 - ✅ Alert notifications sent
 - ❌ Any errors encountered
 
 Example log output:
+
 ```
 🕐 Starting scheduled price tracking...
 📊 Found 10 products to process
@@ -163,12 +175,14 @@ Example log output:
 ### Cron Job Not Running
 
 **For GitHub Actions:**
+
 1. **Check Actions tab** - Verify workflow is enabled and running
 2. **Check GitHub Secrets** - Ensure `APP_URL` and `CRON_SECRET` are set
 3. **Check workflow file** - Ensure `.github/workflows/price-check-cron.yml` exists
 4. **Check logs** - Click on failed runs to see error messages
 
 **For External Services:**
+
 1. **Check service dashboard** - Verify cron job is active
 2. **Check URL** - Ensure the endpoint URL is correct
 3. **Check secret** - Verify `CRON_SECRET` matches
@@ -184,6 +198,7 @@ Example log output:
 ### Rate Limiting Issues
 
 If you have many products:
+
 - The scheduler processes products in batches of 5
 - There's a 3-second delay between batches
 - Adjust batch size in `schedulerService.ts` if needed
@@ -205,20 +220,23 @@ https://your-domain.com/api/cron?secret=YOUR_CRON_SECRET
 To change the frequency, update:
 
 **GitHub Actions**: Edit `.github/workflows/price-check-cron.yml`:
+
 ```yaml
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Every 15 minutes
+    - cron: "*/15 * * * *" # Every 15 minutes
 ```
 
 **External Services**: Update the cron expression in the service dashboard
 
 **Local Development**: Edit `scripts/cron-dev.ts`:
+
 ```typescript
 const CRON_SCHEDULE = "*/15 * * * *"; // Every 15 minutes
 ```
 
 **Cron Schedule Format**: `minute hour day month weekday`
+
 - `*/30 * * * *` = Every 30 minutes
 - `0 */1 * * *` = Every hour
 - `0 9 * * *` = Daily at 9 AM
@@ -234,4 +252,3 @@ const CRON_SCHEDULE = "*/15 * * * *"; // Every 15 minutes
 ---
 
 **Need Help?** Check the main [README.md](./README.md) or open an issue on GitHub.
-

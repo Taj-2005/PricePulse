@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const productTitle = "PricePulse Test Product";
     const currentPrice = 1;
     const targetPrice = 999999;
-    const productUrl = "https://price-pulse-taj.vercel.app/";
+    const productUrl = "https://amazon-pricepulse.vercel.app/";
 
     await sendPriceAlertEmail(
       testRecipient,

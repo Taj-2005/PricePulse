@@ -5,6 +5,7 @@ Since Vercel Cron is a paid feature, here are **100% FREE** alternatives to auto
 ## 🥇 Best Option: GitHub Actions (Recommended)
 
 **Why GitHub Actions?**
+
 - ✅ Completely FREE for public repositories
 - ✅ 2000 free minutes/month for private repos (more than enough!)
 - ✅ Built-in logging and monitoring
@@ -14,24 +15,28 @@ Since Vercel Cron is a paid feature, here are **100% FREE** alternatives to auto
 ### Quick Setup (5 minutes)
 
 1. **The workflow file is already created!** ✅
+
    - File: `.github/workflows/price-check-cron.yml`
 
 2. **Add GitHub Secrets:**
+
    ```bash
    # Generate a secure secret
    openssl rand -base64 32
    ```
-   
+
    Then in GitHub:
+
    - Go to your repo → **Settings** → **Secrets and variables** → **Actions**
    - Click **"New repository secret"**
    - Add these two secrets:
      - **Name**: `APP_URL`
-       **Value**: `https://your-app.vercel.app` (your deployed app URL)
+       **Value**: `https://amazon-pricepulse.vercel.app` (your deployed app URL)
      - **Name**: `CRON_SECRET`
        **Value**: `[paste the generated secret]`
 
 3. **Push to GitHub:**
+
    ```bash
    git add .github/workflows/price-check-cron.yml
    git commit -m "Add GitHub Actions cron workflow"
@@ -81,6 +86,7 @@ Since Vercel Cron is a paid feature, here are **100% FREE** alternatives to auto
 ## 🔒 Security Note
 
 **Important**: Always use the `secret` query parameter with your `CRON_SECRET`:
+
 ```
 https://your-domain.com/api/cron?secret=YOUR_CRON_SECRET
 ```
@@ -91,12 +97,12 @@ Never commit your `CRON_SECRET` to version control!
 
 ## 📊 Comparison
 
-| Service | Free Tier | Ease of Setup | Best For |
-|---------|-----------|---------------|----------|
-| **GitHub Actions** | ✅ Unlimited (public) | ⭐⭐⭐⭐⭐ | **Best overall** |
-| Cron-job.org | ✅ 2 jobs | ⭐⭐⭐⭐ | Simple external service |
-| EasyCron | ✅ 1 job | ⭐⭐⭐ | Basic needs |
-| UptimeRobot | ✅ 50 monitors | ⭐⭐⭐ | Uptime + cron combo |
+| Service            | Free Tier             | Ease of Setup | Best For                |
+| ------------------ | --------------------- | ------------- | ----------------------- |
+| **GitHub Actions** | ✅ Unlimited (public) | ⭐⭐⭐⭐⭐    | **Best overall**        |
+| Cron-job.org       | ✅ 2 jobs             | ⭐⭐⭐⭐      | Simple external service |
+| EasyCron           | ✅ 1 job              | ⭐⭐⭐        | Basic needs             |
+| UptimeRobot        | ✅ 50 monitors        | ⭐⭐⭐        | Uptime + cron combo     |
 
 ---
 
@@ -109,4 +115,3 @@ Never commit your `CRON_SECRET` to version control!
 ---
 
 **Recommendation**: Use **GitHub Actions** - it's the easiest, most reliable, and completely free! 🚀
-

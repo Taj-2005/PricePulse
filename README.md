@@ -1,6 +1,6 @@
 # 📈 PricePulse – Amazon Price Tracker & Smart Comparator
 
-**Live Demo:** [https://price-pulse-taj.vercel.app](https://price-pulse-taj.vercel.app)  
+**Live Demo:** [https://amazon-pricepulse.vercel.app](https://amazon-pricepulse.vercel.app)  
 **GitHub Repo:** [https://github.com/Taj-2005/PricePulse](https://github.com/Taj-2005/PricePulse)
 
 ---
@@ -14,6 +14,7 @@
 ## 🔥 Features
 
 ### Core Functionality
+
 - 🔗 **Track Amazon product prices** – Simply paste a product URL to start tracking
 - 🕒 **Automatic price updates** – Scheduled scraping every 30-60 minutes via cron jobs
 - 📉 **Price history visualization** – Interactive line charts with time filters (24h, 7d, 30d, all time)
@@ -22,6 +23,7 @@
 - 📱 **Fully responsive** – Works seamlessly on desktop, tablet, and mobile devices
 
 ### Advanced Features
+
 - 🔐 **User authentication** – Secure JWT-based authentication system
 - 👤 **User dashboard** – Personal tracking dashboard with product management
 - ⚙️ **Robust error handling** – Graceful error messages and retry logic
@@ -32,6 +34,7 @@
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **Next.js 15** (App Router) – React framework with server-side rendering
 - **TypeScript** – Type-safe development
 - **TailwindCSS** – Utility-first CSS framework
@@ -40,6 +43,7 @@
 - **Lucide React** – Modern icon library
 
 ### Backend
+
 - **Next.js API Routes** – Serverless API endpoints
 - **MongoDB Atlas** – Cloud database for product and user data
 - **Mongoose** – MongoDB object modeling and schema management
@@ -50,6 +54,7 @@
 - **Bcrypt** – Password hashing
 
 ### Infrastructure
+
 - **Vercel** – Hosting and deployment platform
 - **Vercel Cron** – Scheduled job execution (or similar cron service)
 
@@ -137,10 +142,11 @@ PricePulse automatically checks product prices every 30 minutes and sends alerts
 1. **The workflow file is already created!** ✅ Check `.github/workflows/price-check-cron.yml`
 
 2. **Add GitHub Secrets:**
+
    - Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
    - Click **"New repository secret"**
    - Add these secrets:
-     - `APP_URL`: Your deployed app URL (e.g., `https://your-app.vercel.app`)
+     - `APP_URL`: Your deployed app URL (e.g., `https://amazon-pricepulse.vercel.app`)
      - `CRON_SECRET`: Generate with `openssl rand -base64 32`
 
 3. **Push to GitHub** - The workflow automatically runs every 30 minutes!
@@ -148,6 +154,7 @@ PricePulse automatically checks product prices every 30 minutes and sends alerts
 4. **Verify**: Go to your repo → **Actions** tab → See execution logs
 
 **Benefits:**
+
 - ✅ Completely free for public repos
 - ✅ Built-in logging and monitoring
 - ✅ Can manually trigger from GitHub UI
@@ -238,6 +245,7 @@ PricePulse/
 ### Database Schema
 
 **TrackedProduct**
+
 - `url` (String, unique) – Amazon product URL
 - `title` (String) – Product name
 - `currentPrice` (Number) – Latest price
@@ -246,11 +254,13 @@ PricePulse/
 - `lastScrapedAt` (Date) – Last update timestamp
 
 **PriceHistory**
+
 - `productUrl` (String, indexed) – Reference to product
 - `price` (Number) – Historical price
 - `timestamp` (Date, indexed) – When price was recorded
 
 **Alert**
+
 - `productId` (ObjectId) – Reference to TrackedProduct
 - `userEmail` (String) – Alert recipient
 - `targetPrice` (Number) – Price threshold
@@ -259,14 +269,14 @@ PricePulse/
 
 ### API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/track` | POST | Start tracking a product |
-| `/api/history?url=...&filter=...` | GET | Get price history with time filter |
-| `/api/alerts` | POST | Create/update alert |
-| `/api/alerts?productId=...` | GET | Get alerts for a product |
-| `/api/cron` | GET | Run scheduled price updates |
-| `/api/tracked?userEmail=...` | GET | Get user's tracked products |
+| Endpoint                          | Method | Description                        |
+| --------------------------------- | ------ | ---------------------------------- |
+| `/api/track`                      | POST   | Start tracking a product           |
+| `/api/history?url=...&filter=...` | GET    | Get price history with time filter |
+| `/api/alerts`                     | POST   | Create/update alert                |
+| `/api/alerts?productId=...`       | GET    | Get alerts for a product           |
+| `/api/cron`                       | GET    | Run scheduled price updates        |
+| `/api/tracked?userEmail=...`      | GET    | Get user's tracked products        |
 
 ### Flow Diagram
 
@@ -360,6 +370,7 @@ npm start
 **Recommended: Use GitHub Actions (100% Free!)**
 
 The workflow file is already created at `.github/workflows/price-check-cron.yml`. Just:
+
 1. Add `APP_URL` and `CRON_SECRET` to GitHub Secrets
 2. Push to GitHub - it will run automatically every 30 minutes!
 
@@ -384,8 +395,9 @@ This project is open source and available under the [MIT License](LICENSE).
 ## 👤 Author
 
 **Taj**
+
 - GitHub: [@Taj-2005](https://github.com/Taj-2005)
-- Live Demo: [PricePulse](https://price-pulse-taj.vercel.app)
+- Live Demo: [PricePulse](https://amazon-pricepulse.vercel.app)
 
 ---
 

@@ -24,7 +24,7 @@ const archivo = Archivo({
   preload: true,
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://price-pulse-taj.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://amazon-pricepulse.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     description: "Track Amazon product prices, set alerts, and get notified when prices drop. Free price tracking with email alerts.",
     images: [
       {
-        url: `${siteUrl}/pricepulse4.png`,
+        url: `${siteUrl}/pricepulse.png`,
         width: 1200,
         height: 630,
         alt: "PricePulse - Amazon Price Tracker",
