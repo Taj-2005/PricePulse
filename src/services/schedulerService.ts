@@ -8,24 +8,18 @@ async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Process a single product: scrape, save history, check alerts
- */
 async function processProduct(product: any) {
   try {
     console.log(`🔄 Processing: ${product.title} (${product.url})`);
 
-    // Scrape current price
     const scraped = await scrapeProduct(product.url, 3);
 
-    // Save to price history
     await PriceHistory.create({
       productUrl: product.url,
       price: scraped.priceNumber,
       timestamp: new Date(),
     });
 
-    // Update tracked product
     await TrackedProduct.findByIdAndUpdate(product._id, {
       currentPrice: scraped.priceNumber,
       title: scraped.title,
@@ -37,13 +31,11 @@ async function processProduct(product: any) {
 
     console.log(`✅ Updated: ${scraped.title} @ ₹${scraped.priceNumber}`);
 
-    // Check and send alerts
     const alertResult = await checkAndSendAlert(product._id.toString(), scraped.priceNumber);
     if (alertResult.alertSent) {
       console.log(`📧 ${alertResult.message}`);
     }
 
-    // Reset alerts if price went back up (optional)
     if (scraped.priceNumber > product.currentPrice) {
       await resetAlertIfPriceAboveTarget(product._id.toString(), scraped.priceNumber);
     }
@@ -55,9 +47,7 @@ async function processProduct(product: any) {
   }
 }
 
-/**
- * Main scheduler function - processes all tracked products in batches
- */
+
 export async function runScheduler(): Promise<{
   success: number;
   failed: number;
@@ -73,12 +63,11 @@ export async function runScheduler(): Promise<{
       return { success: 0, failed: 0, results: [] };
     }
 
-    const batchSize = 5; // Process 5 products at a time
+    const batchSize = 5;
     const results: any[] = [];
     let successCount = 0;
     let failedCount = 0;
 
-    // Process in batches to avoid overwhelming the scraper
     for (let i = 0; i < products.length; i += batchSize) {
       const batch = products.slice(i, i + batchSize);
       console.log(`\n📦 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(products.length / batchSize)}`);
@@ -101,7 +90,6 @@ export async function runScheduler(): Promise<{
         }
       }
 
-      // Delay between batches to avoid rate limiting
       if (i + batchSize < products.length) {
         console.log("⏳ Waiting 3 seconds before next batch...");
         await delay(3000);

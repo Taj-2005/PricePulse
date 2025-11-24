@@ -15,9 +15,8 @@ const TrackedList: React.FC<TrackedListProps> = ({ products, handleClick, onDele
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
 
   const handleDelete = async (e: React.MouseEvent, productId: string) => {
-    e.stopPropagation(); // Prevent card click
+    e.stopPropagation();
     
-    // Use custom confirmation toast
     const confirmed = await new Promise<boolean>((resolve) => {
       const toastId = toast(
         (t) => (

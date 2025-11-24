@@ -1,4 +1,3 @@
-// app/api/test-email/route.ts  (Next.js app router style)
 import { NextRequest, NextResponse } from "next/server";
 import { sendPriceAlertEmail } from "@/services/emailService";
 
@@ -17,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     const testRecipient = process.env.TEST_ALERT_EMAIL || "your.email@domain.com";
     const productTitle = "PricePulse Test Product";
-    const currentPrice = 1; // cheap so it triggers
+    const currentPrice = 1;
     const targetPrice = 999999;
     const productUrl = "https://price-pulse-taj.vercel.app/";
 

@@ -48,29 +48,22 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
         const res = await fetch(`/api/tracked?userEmail=${encodeURIComponent(userEmail)}`);
         if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
-        // Handle both old format (array) and new format (object with products and totalValue)
         const productList = data.products || data;
         const filtered = productList.filter((product: Product) => product.userEmail === userEmail);
         setProducts(filtered);
-        // Set total value from API response (database-calculated)
         if (data.totalValue !== undefined) {
           setTotalValue(data.totalValue);
         } else if (filtered.length > 0) {
-          // Fallback calculation if API doesn't return totalValue
-          // Handle both string and number types for currentPrice
           const validPrices = filtered
             .map((p: Product) => {
               const price = p.currentPrice;
               if (price == null) return null;
               
-              // If it's already a number, use it
               if (typeof price === 'number') {
                 return isNaN(price) || price <= 0 ? null : price;
               }
               
-              // If it's a string, parse it
               if (typeof price === 'string') {
-                // Remove any currency symbols, commas, and whitespace
                 const cleaned = price.replace(/[₹,\s]/g, '');
                 const parsed = parseFloat(cleaned);
                 return isNaN(parsed) || parsed <= 0 ? null : parsed;
@@ -107,18 +100,15 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
   const handleFormSubmit = (newProduct: Product) => {
     setProducts((prev) => [...prev, newProduct]);
     setShowForm(false);
-    // Refresh products list
     fetchProducts();
   };
 
   const handleDelete = (productId: string) => {
     setProducts((prev) => prev.filter((p) => p._id !== productId));
-    // If we deleted the currently viewed product, clear it
     if (product && product.title) {
       setProduct(null);
       setHistory([]);
     }
-    // Refresh products list
     fetchProducts();
   };
 
@@ -127,13 +117,11 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
     setProduct(null);
     setHistory([]);
     
-    // Show loading toast
     const loadingToast = toast.loading("Fetching product data...", {
       duration: 5000,
     });
 
     try {
-      // Scroll to history section
       setTimeout(() => {
         historySectionRef.current?.scrollIntoView({ 
           behavior: 'smooth', 
@@ -163,14 +151,12 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
       toast.dismiss(loadingToast);
       toast.success("Product data loaded");
 
-      // Fetch price history
     const historyRes = await fetch(`/api/history?url=${encodeURIComponent(url)}`);
     if (!historyRes.ok) throw new Error("Failed to fetch price history");
 
     const historyData = await historyRes.json();
     setHistory(historyData);
       
-      // Scroll again after data loads
       setTimeout(() => {
         historySectionRef.current?.scrollIntoView({ 
           behavior: 'smooth', 
@@ -279,7 +265,6 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
             )}
           </div>
 
-          {/* Stats Cards */}
           {!loading && products.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
               <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
@@ -417,7 +402,6 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
           </div>
         )}
 
-        {/* Price History Section */}
         <div ref={historySectionRef}>
           {fetchingHistory && !product && (
             <div className="mt-8 bg-white border border-gray-200 rounded-2xl shadow-lg p-6 sm:p-8">

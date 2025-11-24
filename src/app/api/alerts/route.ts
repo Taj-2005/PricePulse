@@ -5,10 +5,6 @@ import Alert from "@/models/Alert";
 import TrackedProduct from "@/models/trackedProduct";
 import { createOrUpdateAlert } from "@/services/alertService";
 
-/**
- * GET /api/alerts?productId=xxx OR ?userEmail=xxx
- * Get all alerts for a product or user
- */
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
@@ -36,7 +32,6 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .lean();
     
-    // Fetch products separately since lean() doesn't work well with populate
     const alertsWithProducts = await Promise.all(
       alerts.map(async (alert: any) => {
         const productId = alert.productId;
@@ -65,11 +60,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * POST /api/alerts
- * Create or update an alert
- * Body: { productId, userEmail, targetPrice }
- */
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
@@ -83,7 +73,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate product exists
     const product = await TrackedProduct.findById(productId);
     if (!product) {
       return NextResponse.json(
@@ -92,7 +81,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(userEmail)) {
       return NextResponse.json(
@@ -101,7 +89,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate target price
     if (typeof targetPrice !== "number" || targetPrice <= 0) {
       return NextResponse.json(
         { error: "Target price must be a positive number" },
@@ -124,10 +111,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * DELETE /api/alerts?id=xxx
- * Delete an alert
- */
 export async function DELETE(request: NextRequest) {
   try {
     await connectDB();

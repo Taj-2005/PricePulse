@@ -1,10 +1,6 @@
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 
-/**
- * Custom confirmation hook that uses toast instead of browser confirm()
- * Returns a function that shows a custom confirmation dialog
- */
 export function useConfirm() {
   const confirm = useCallback(
     (message: string): Promise<boolean> => {
@@ -36,7 +32,7 @@ export function useConfirm() {
             </div>
           ),
           {
-            duration: Infinity, // Keep open until user clicks
+            duration: Infinity,
             style: {
               padding: "1rem",
               maxWidth: "400px",

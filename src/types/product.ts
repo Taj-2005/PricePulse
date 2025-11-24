@@ -2,7 +2,7 @@ export interface Product {
   title: string;
   _id: string;
   url: string;
-  currentPrice: number | string; // Can be string or number from database
+  currentPrice: number | string; 
   userEmail: string;
   imageUrl?: string;
   lastScrapedAt?: string;

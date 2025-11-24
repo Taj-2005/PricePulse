@@ -24,27 +24,19 @@ export async function GET(request: NextRequest) {
       .sort({ updatedAt: -1 })
       .lean();
 
-    // If userEmail is provided, return enhanced response with totalValue
-    // Otherwise, return simple array for backward compatibility
     if (userEmail) {
-      // Calculate total value from database for this user's products
-      // Handle both string and number types for currentPrice
       let totalValue = 0;
       if (products.length > 0) {
         const validPrices = products
           .map((p: any) => {
-            // Parse price - handle both string and number types
             const price = p.currentPrice;
             if (price == null) return null;
             
-            // If it's already a number, use it
             if (typeof price === 'number') {
               return isNaN(price) || price <= 0 ? null : price;
             }
             
-            // If it's a string, parse it
             if (typeof price === 'string') {
-              // Remove any currency symbols, commas, and whitespace
               const cleaned = price.replace(/[₹,\s]/g, '');
               const parsed = parseFloat(cleaned);
               return isNaN(parsed) || parsed <= 0 ? null : parsed;
@@ -65,7 +57,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Backward compatibility: return array format
     return NextResponse.json(products || []);
   } catch (error: any) {
     console.error("Error fetching tracked products:", error);
@@ -76,15 +67,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * DELETE /api/tracked?id=xxx
- * Delete a tracked product by ID
- */
+
 export async function DELETE(request: NextRequest) {
   try {
     await connectDB();
 
-    // Verify authentication
     const token = request.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -107,7 +94,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
     }
 
-    // Verify the product belongs to the user
     const product = await TrackedProduct.findById(productId);
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
@@ -118,7 +104,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Delete the product
     await TrackedProduct.findByIdAndDelete(productId);
 
     return NextResponse.json({ message: "Product deleted successfully" });

@@ -58,19 +58,13 @@ const TrackingForm = ({ defaultEmail }: TrackingFormProps) => {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [loading, setLoading] = useState(false);
 
-  // Update email when defaultEmail prop changes
   useEffect(() => {
     if (defaultEmail) {
       setUserEmail(defaultEmail);
     }
   }, [defaultEmail]);
 
-  // Note: We can't access httpOnly cookies from client-side
-  // Email will be optional - users can enter it manually or it will be handled server-side
   const getEmailFromToken = (): string | null => {
-    // Since we're using httpOnly cookies, we can't access the token client-side
-    // This function is kept for backward compatibility but returns null
-    // The email should be passed as a prop when used in authenticated contexts
       return null;
   };
 
@@ -101,7 +95,6 @@ const TrackingForm = ({ defaultEmail }: TrackingFormProps) => {
 
     try {
       let emailToSend = userEmail.trim();
-      // If no email provided and we have a defaultEmail (from props), use it
       if (!emailToSend && defaultEmail) {
         emailToSend = defaultEmail;
       }

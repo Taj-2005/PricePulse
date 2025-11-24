@@ -17,7 +17,6 @@ const Logout = () => {
         throw new Error('Failed to sign out');
       }
 
-      // Clear any client-side token storage
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
       }
@@ -27,7 +26,6 @@ const Logout = () => {
       router.refresh();
     } catch (error) {
       toast.error('Failed to sign out');
-      // Force redirect even if API call fails
       router.push('/login');
       router.refresh();
     }

@@ -1,4 +1,3 @@
-// Navbar.tsx
 'use client';
 
 import Image from 'next/image';
@@ -16,7 +15,6 @@ const Navbar: React.FC<NavbarProps> = ({ AuthButton }) => {
       role="navigation"
       aria-label="Main navigation"
     >
-      {/* Logo + Title */}
       <Link 
         href="/" 
         className="flex items-center gap-3 sm:gap-4 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"

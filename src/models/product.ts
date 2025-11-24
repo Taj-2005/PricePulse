@@ -1,18 +1,19 @@
 import mongoose, { Schema } from "mongoose";
 
-// PriceHistory model - stores historical price data
 const priceHistorySchema = new Schema({
-  productUrl: { type: String, required: true, index: true },
+  productUrl: { type: String, required: true }, // removed index: true
   price: { type: Number, required: true },
-  timestamp: { type: Date, default: Date.now, index: true },
+  timestamp: { type: Date, default: Date.now },
 });
 
-// Compound index for efficient queries
+// Keep only THIS single index definition
 priceHistorySchema.index({ productUrl: 1, timestamp: -1 });
 
-export const PriceHistory = mongoose.models.PriceHistory || mongoose.model("PriceHistory", priceHistorySchema);
+export const PriceHistory =
+  mongoose.models.PriceHistory ||
+  mongoose.model("PriceHistory", priceHistorySchema);
 
-// Legacy Product model for backward compatibility (can be removed later)
+
 const productSchema = new Schema({
   url: String,
   title: String,

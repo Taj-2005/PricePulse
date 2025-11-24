@@ -13,7 +13,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const url = searchParams.get("url");
-    const filter = searchParams.get("filter") || "all"; // 24h, 7d, 30d, all
+    const filter = searchParams.get("filter") || "all"; 
 
     if (!url) {
       return NextResponse.json(
@@ -22,7 +22,6 @@ export async function GET(request: Request) {
       );
     }
 
-    // Date range logic
     let startDate: Date | null = null;
     const now = new Date();
 
@@ -42,7 +41,6 @@ export async function GET(request: Request) {
         break;
     }
 
-    // Build query
     const query: any = { productUrl: url };
     if (startDate) {
       query.timestamp = { $gte: startDate };
@@ -50,7 +48,6 @@ export async function GET(request: Request) {
 
     let history: CleanHistory[] = [];
 
-    // Fetch using new model
     const newHistory = await PriceHistory.find(query).sort({ timestamp: 1 }).lean();
 
     if (newHistory.length > 0) {
@@ -61,7 +58,6 @@ export async function GET(request: Request) {
         timestamp: doc.timestamp,
       }));
     } else {
-      // Fallback to legacy model
       const legacyQuery: any = { url };
       if (startDate) {
         legacyQuery.timestamp = { $gte: startDate };

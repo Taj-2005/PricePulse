@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
   try {
     const { url, userEmail, targetPrice } = await req.json();
 
-    // Validation
     if (!url || typeof url !== "string") {
       return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
     }
@@ -35,7 +34,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Scrape product
     const scraped = await scrapeProduct(url);
     if (!scraped?.title || !scraped?.price) {
       return NextResponse.json(
@@ -44,11 +42,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find or create tracked product
     let trackedProduct = await TrackedProduct.findOne({ url });
 
     if (trackedProduct) {
-      // Update existing product
       trackedProduct.currentPrice = scraped.priceNumber;
       trackedProduct.title = scraped.title;
       trackedProduct.lastScrapedAt = new Date();
@@ -58,7 +54,6 @@ export async function POST(req: NextRequest) {
       if (userEmail) trackedProduct.userEmail = userEmail;
       await trackedProduct.save();
     } else {
-      // Create new tracked product
       trackedProduct = await TrackedProduct.create({
         url,
         title: scraped.title,
@@ -71,14 +66,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Save to price history
     await PriceHistory.create({
       productUrl: url,
       price: scraped.priceNumber,
       timestamp: new Date(),
     });
 
-    // Create or update alert if target price and email provided
     if (userEmail && targetPrice) {
       await createOrUpdateAlert(
         trackedProduct._id.toString(),
@@ -86,7 +79,6 @@ export async function POST(req: NextRequest) {
         targetPrice
       );
 
-      // Check if we should send an immediate alert
       if (scraped.priceNumber <= targetPrice) {
         await checkAndSendAlert(trackedProduct._id.toString(), scraped.priceNumber);
       }
@@ -103,7 +95,6 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("Track API error:", err);
     
-    // Provide user-friendly error messages
     let status = err.status || 500;
     let message = err.message || "Unknown error";
 

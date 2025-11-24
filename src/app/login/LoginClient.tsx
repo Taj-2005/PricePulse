@@ -10,11 +10,18 @@ import Navbar from "@/app/components/Navbar";
 import LoginBtn from "@/app/components/LoginBtn";
 
 export default function LoginClient() {
+  const searchParams = useSearchParams();
+  const expired = searchParams.get("expired");
+
+  useEffect(() => {
+    if (expired) {
+      toast.error("Session expired. Please log in again.");
+    }
+  }, [expired]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [logging, setLogging] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect');
 
   async function handleSubmit(e: React.FormEvent) {
@@ -28,7 +35,7 @@ export default function LoginClient() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-        credentials: "include", // Important: include cookies in request
+        credentials: "include",
       });
 
       let data;
@@ -50,19 +57,16 @@ export default function LoginClient() {
         return;
       }
 
-      // Cookie is set automatically by server
       console.log("Login successful, cookie should be set");
       
-      // Check if cookie is in response headers
       const setCookieHeader = res.headers.get("set-cookie");
       console.log("Set-Cookie header:", setCookieHeader);
       
       toast.success("Logged in successfully!");
       
-      // Wait a bit longer to ensure cookie is fully set
       await new Promise(resolve => setTimeout(resolve, 200));
       setLogging(false);
-      router.push(redirect || "/dashboard");
+      window.location.reload();
     } catch (error: any) {
       console.error("Login error:", error);
       toast.error(error.message || "An error occurred. Please try again.");
@@ -75,7 +79,6 @@ export default function LoginClient() {
       <Navbar AuthButton={<LoginBtn />} />
       <div className="max-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center py-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* Image Section */}
           <div className="hidden lg:flex items-center justify-center">
             <div className="relative w-full max-w-lg">
               <Image
@@ -90,7 +93,6 @@ export default function LoginClient() {
             </div>
           </div>
 
-          {/* Form Section */}
           <div className="w-full max-w-md mx-auto">
             <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-10 border border-gray-200">
               <div className="text-center mb-8">

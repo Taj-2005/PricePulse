@@ -57,7 +57,6 @@ export default function AlertsClient({ userEmail }: { userEmail: string }) {
   };
 
   const handleDelete = async (alertId: string) => {
-    // Use custom confirmation toast
     const confirmed = await new Promise<boolean>((resolve) => {
       const toastId = toast(
         (t) => (

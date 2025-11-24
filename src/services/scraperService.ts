@@ -60,7 +60,6 @@ export async function scrapeProduct(
         if (price) break;
       }
 
-      // Extract image URL
       const imageUrl =
         $("#landingImage").attr("src") ||
         $("#imgBlkFront").attr("src") ||
@@ -71,13 +70,11 @@ export async function scrapeProduct(
         throw new Error("Product not found or price missing");
       }
 
-      // Extract numeric price
       const priceNumber = parseFloat(price.replace(/[^0-9.]/g, ""));
       if (isNaN(priceNumber)) {
         throw new Error("Invalid price format");
       }
 
-      // Try to extract brand and model (basic extraction)
       const brandMatch = title.match(/^([^,]+)/);
       const brand = brandMatch ? brandMatch[1].trim() : undefined;
 
@@ -101,7 +98,7 @@ export async function scrapeProduct(
           }
         );
       }
-      await new Promise((r) => setTimeout(r, 2000 * attempt)); // Exponential backoff
+      await new Promise((r) => setTimeout(r, 2000 * attempt)); 
     }
   }
 

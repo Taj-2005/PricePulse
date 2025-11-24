@@ -1,4 +1,3 @@
-// emailService.ts (update sendEmail)
 import nodemailer from "nodemailer";
 
 export interface EmailOptions {
@@ -25,8 +24,6 @@ function getTransporter() {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
-    // helpful for debugging TLS issues in some environments (optional)
-    // tls: { rejectUnauthorized: false },
   });
 
   return transporter;
@@ -50,7 +47,6 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
       html: html || text,
     });
 
-    // VERY IMPORTANT: log provider response for debugging
     console.log("📧 Email send info:", {
       messageId: info.messageId,
       accepted: info.accepted,
@@ -60,7 +56,6 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
 
   } catch (error: any) {
     console.error("❌ Email send error (sendEmail):", error);
-    // rethrow so caller knows it failed (your checkAndSendAlert already catches this)
     throw new Error(`Failed to send email: ${error.message || error}`);
   }
 }
