@@ -4,11 +4,7 @@ export async function POST(req: Request) {
   try {
     const response = NextResponse.json({ message: "Signed out successfully" });
 
-    response.cookies.set("token", "", {
-      httpOnly: true,
-      path: "/",
-      expires: new Date(0),
-    });
+    response.cookies.delete("token");
 
     return response;
   } catch (error) {

@@ -1,80 +1,52 @@
-import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
-import TrackedProduct from "@/models/trackedProduct";
-import { Product } from "@/models/product";
-import { scrapeProduct } from "@/lib/scraper";
-import { sendEmail } from "@/lib/sendEmail";
+import { NextRequest, NextResponse } from "next/server";
+import { runScheduler } from "@/services/schedulerService";
 
-async function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export async function GET() {
+/**
+ * Cron job endpoint for periodic price tracking
+ * Should be called every 30 minutes by a cron service (Vercel Cron, etc.)
+ * 
+ * Security: If CRON_SECRET is set, it must be provided in the Authorization header
+ * or as a query parameter 'secret'
+ */
+export async function GET(request: NextRequest) {
   try {
-    await connectDB();
-
-    const products = await TrackedProduct.find(); // userEmail and targetPrice must exist in schema!
-    const batchSize = 5;
-
-    for (let i = 0; i < products.length; i += batchSize) {
-      const batch = products.slice(i, i + batchSize);
-
-      await Promise.all(
-        batch.map(async (product) => {
-          try {
-            const { title, price } = await scrapeProduct(product.url, 4);
-
-            // Save current price snapshot
-            await Product.create({
-              url: product.url,
-              title,
-              price,
-              timestamp: new Date(),
-            });
-
-            // Update currentPrice in TrackedProduct document
-            const currentPriceNum = parseFloat(price.replace(/[^0-9.]/g, ""));
-            if (!isNaN(currentPriceNum)) {
-              await TrackedProduct.updateOne(
-                { _id: product._id },
-                { currentPrice: currentPriceNum, title }
-              );
-            }
-
-            console.log(`✅ Tracked: ${title} @ ${price}`);
-
-            // Check and send email if alert conditions are met
-            const target = product.targetPrice;
-
-            if (
-              product.userEmail &&
-              target &&
-              !isNaN(currentPriceNum) &&
-              currentPriceNum <= target
-            ) {
-              await sendEmail(
-                product.userEmail,
-                "Price Drop Alert",
-                `The product "${title}" is now ₹${currentPriceNum}, which is below your target of ₹${target}.\n\nProduct link: ${product.url}`
-              );
-              console.log(`📧 Email sent to ${product.userEmail}`);
-            } else {
-              console.log(
-                `ℹ️ No email: ${title} @ ₹${currentPriceNum} (target: ₹${target})`
-              );
-            }
-          } catch (error: any) {
-            console.error("❌ Failed to scrape or email:", product.url, error.message);
-          }
-        })
-      );
-
-      // Delay between batches
-      await delay(3000);
+    // Security: Check for CRON_SECRET if configured
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret) {
+      const authHeader = request.headers.get("authorization");
+      const secretParam = request.nextUrl.searchParams.get("secret");
+      
+      // Vercel Cron automatically sends the secret in Authorization header
+      // External cron services can use ?secret=xxx query parameter
+      const providedSecret = authHeader?.replace("Bearer ", "") || secretParam;
+      
+      if (providedSecret !== cronSecret) {
+        console.warn("❌ Unauthorized cron job attempt");
+        return NextResponse.json(
+          { error: "Unauthorized" },
+          { status: 401 }
+        );
+      }
     }
 
-    return NextResponse.json({ message: "Scraping & alerting completed." });
+    console.log("🕐 Starting scheduled price tracking...");
+    const result = await runScheduler();
+
+    return NextResponse.json({
+      message: "Scheduler completed successfully",
+      success: result.success,
+      failed: result.failed,
+      total: result.success + result.failed,
+      timestamp: new Date().toISOString(),
+    });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error("❌ Cron job error:", err);
+    return NextResponse.json(
+      {
+        error: err.message || "Scheduler failed",
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
   }
 }

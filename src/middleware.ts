@@ -1,22 +1,50 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { verifyJWTEdge } from "@/lib/verifyJWTEdge";
 
-export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
-  const isPublicPath = path === '/' || path === '/login' || path === '/signup';
-  const token = request.cookies.get('token')?.value || "";
+const PROTECTED_ROUTES = [
+  "/dashboard",
+];
 
-  if (isPublicPath && token) {
-    return NextResponse.redirect(new URL('/dashboard', request.nextUrl));
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  const token = req.cookies.get("token")?.value;
+
+  // Check if path is protected
+  const isProtected = PROTECTED_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  // Only protect private routes - let client handle public route navigation
+  if (isProtected) {
+    // Protected route requires authentication
+    if (!token) {
+      // No token, redirect to login
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
+    }
+
+    // Verify token (using Edge-compatible library)
+    const isValid = await verifyJWTEdge(token);
+    if (!isValid) {
+      // Invalid token, clear cookie and redirect to login
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirect", pathname);
+      const response = NextResponse.redirect(url);
+      response.cookies.delete("token");
+      return response;
+    }
   }
 
-  if (!isPublicPath && !token) {
-    return NextResponse.redirect(new URL('/', request.nextUrl));
-  }
-
+  // Allow all other routes (public routes, API routes, static files, etc.)
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/', '/login', '/signup', '/dashboard/:path*'],
+  matcher: [
+    "/dashboard/:path*",
+  ],
 };

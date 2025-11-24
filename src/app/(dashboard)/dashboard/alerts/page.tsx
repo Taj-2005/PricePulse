@@ -1,18 +1,18 @@
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
-import DashboardClient from "@/app/components/DashboardClient";
+import AlertsClient from "./AlertsClient";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Manage your tracked products, view price history, and set up price alerts. Your personal price tracking dashboard.",
+  title: "Active Alerts",
+  description: "View and manage your active price alerts. Track when products drop below your target prices.",
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default async function DashboardPage() {
+export default async function AlertsPage() {
   const token = (await cookies()).get("token")?.value;
 
   if (!token) {
@@ -20,7 +20,7 @@ export default async function DashboardPage() {
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="bg-red-50 border border-red-200 text-red-800 p-6 rounded-lg shadow-md max-w-md w-full text-center">
           <h2 className="text-xl font-semibold mb-2">Unauthorized</h2>
-          <p className="text-sm">Please log in to access your dashboard.</p>
+          <p className="text-sm">Please log in to view your alerts.</p>
         </div>
       </div>
     );
@@ -29,5 +29,6 @@ export default async function DashboardPage() {
   const user = jwt.decode(token) as { email: string };
   const userEmail = user?.email;
 
-  return <DashboardClient userEmail={userEmail} />;
+  return <AlertsClient userEmail={userEmail} />;
 }
+

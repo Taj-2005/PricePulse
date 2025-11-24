@@ -1,14 +1,8 @@
+"use client";
+
 import { Toaster } from "react-hot-toast";
 import Navbar from "@/app/components/Navbar";
 import LogoutBtn from "@/app/components/LogoutBtn";
-import { Metadata } from "next";
-import TrackedList from "@/app/components/TrackedList";
-
-export const metadata: Metadata = {
-  title: "PricePulse",
-  description:
-    "PricePulse is a fullstack web application that allows users to track and visualize Amazon product prices in real-time.",
-};
 
 export default function DashboardLayout({
   children,
@@ -18,7 +12,7 @@ export default function DashboardLayout({
   return (
     <>
       <Navbar AuthButton={<LogoutBtn />} />
-      <div className="bg-white">{children}</div>
+      <div className="bg-gray-50 min-h-screen">{children}</div>
       <Toaster position="top-right" />
     </>
   );
