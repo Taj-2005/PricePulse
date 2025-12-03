@@ -8,45 +8,88 @@ export interface ScrapedProduct {
   imageUrl?: string;
   brand?: string;
   model?: string;
+  rating?: number;
+  asin?: string;
 }
 
-/**
- * Scrapes Amazon product data with exponential backoff retries
- * Timeout set to 20s to stay well within Vercel serverless limits (10s Hobby, 60s Pro)
- * Each attempt has a max timeout to prevent exceeding function limits
- */
+const USER_AGENTS = [
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+];
+
+function normalizeUrl(url: string): string {
+  if (url.includes("amzn.in") || url.includes("amzn.to")) {
+    url = url.replace(/^https?:\/\/(www\.)?(amzn\.(in|to))/, "https://www.amazon.in");
+  }
+  
+  const urlObj = new URL(url);
+  const pathParts = urlObj.pathname.split("/");
+  const dpIndex = pathParts.indexOf("dp");
+  
+  if (dpIndex !== -1 && pathParts[dpIndex + 1]) {
+    urlObj.pathname = `/dp/${pathParts[dpIndex + 1]}`;
+    urlObj.search = "";
+    urlObj.hash = "";
+  }
+  
+  return urlObj.toString();
+}
+
+function extractAsin(url: string): string | null {
+  const dpMatch = url.match(/\/dp\/([A-Z0-9]{10})/);
+  if (dpMatch) return dpMatch[1];
+  
+  const gpMatch = url.match(/\/gp\/product\/([A-Z0-9]{10})/);
+  if (gpMatch) return gpMatch[1];
+  
+  return null;
+}
+
+async function resolveRedirects(url: string, maxRedirects = 5): Promise<string> {
+  try {
+    const response = await axios.head(url, {
+      maxRedirects,
+      timeout: 5000,
+      validateStatus: (status) => status < 400,
+    });
+    return response.request.res?.responseUrl || url;
+  } catch {
+    return url;
+  }
+}
+
 export async function scrapeProduct(
   url: string,
   retries = 3
 ): Promise<ScrapedProduct> {
   const apiKey = process.env.SCRAPER_API_KEY;
   if (!apiKey) {
-    console.error("[SCRAPER] Missing SCRAPER_API_KEY in environment variables");
     throw Object.assign(
-      new Error("Missing SCRAPER_API_KEY in environment variables"),
+      new Error("SCRAPER_API_KEY not configured"),
       { status: 500 }
     );
   }
 
-  let finalUrl = url;
-  try {
-    // Resolve redirects with shorter timeout
-    const headResponse = await axios.head(url, {
-      maxRedirects: 5,
-      timeout: 3000, // Reduced to 3s for faster failure
-      validateStatus: (status) => status < 400,
-    });
-    finalUrl = headResponse.request.res?.responseUrl || url;
-  } catch (error: any) {
-    console.warn("[SCRAPER] Redirect resolution failed, proceeding with original URL:", error.message);
-  }
+  let normalizedUrl = normalizeUrl(url);
+  normalizedUrl = await resolveRedirects(normalizedUrl);
+  const asin = extractAsin(normalizedUrl);
 
-  const scraperUrl = `http://api.scraperapi.com?api_key=${apiKey}&url=${encodeURIComponent(finalUrl)}`;
+  const userAgent = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+  
+  const scraperParams = new URLSearchParams({
+    api_key: apiKey,
+    url: normalizedUrl,
+    render: "true",
+    country_code: "in",
+    premium: "true",
+    session_number: "1",
+  });
 
-  // Realistic browser headers to avoid detection
+  const scraperUrl = `http://api.scraperapi.com?${scraperParams.toString()}`;
+
   const headers = {
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "User-Agent": userAgent,
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
     "Accept-Encoding": "gzip, deflate, br",
@@ -61,27 +104,28 @@ export async function scrapeProduct(
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     const attemptStartTime = Date.now();
+    
     try {
-      console.log(`[SCRAPER] Attempt ${attempt}/${retries} for URL: ${url}`);
-      
       const response = await axios.get(scraperUrl, {
         headers,
-        timeout: 20000, // 20s timeout - safer for Vercel serverless (leaves buffer)
+        timeout: 25000,
         maxRedirects: 5,
-        validateStatus: (status) => status < 500, // Accept 4xx but retry on 5xx
+        validateStatus: (status) => status < 500,
       });
 
-      // Check for CAPTCHA or blocked responses
       if (response.status === 403 || response.status === 429) {
-        throw new Error(`Amazon blocked request: HTTP ${response.status}`);
+        throw Object.assign(
+          new Error(`Blocked: HTTP ${response.status}`),
+          { status: response.status }
+        );
       }
 
       const html = response.data;
       if (!html || typeof html !== "string") {
-        throw new Error("Invalid HTML response from scraper");
+        throw new Error("Invalid HTML response");
       }
 
-      // Check for CAPTCHA indicators in HTML
+      const htmlLower = html.toLowerCase();
       const captchaIndicators = [
         "captcha",
         "robot",
@@ -89,44 +133,37 @@ export async function scrapeProduct(
         "verify you are human",
         "sorry, we just need to make sure",
         "enter the characters you see",
+        "cloudflare",
       ];
-      const htmlLower = html.toLowerCase();
-      const hasCaptcha = captchaIndicators.some((indicator) => htmlLower.includes(indicator));
       
-      if (hasCaptcha) {
-        console.warn(`[SCRAPER] CAPTCHA detected in response (attempt ${attempt})`);
+      if (captchaIndicators.some((indicator) => htmlLower.includes(indicator))) {
         if (attempt < retries) {
-          const delay = Math.min(3000 * attempt, 8000); // Max 8s delay
-          await new Promise((r) => setTimeout(r, delay));
+          await new Promise((r) => setTimeout(r, 3000 * attempt));
           continue;
         }
         throw Object.assign(
-          new Error("Amazon CAPTCHA detected - blocking automated access"),
+          new Error("CAPTCHA detected"),
           { status: 403, isCaptcha: true }
         );
       }
-      
-      // Check for "Page Not Found" or similar errors
+
       if (htmlLower.includes("page not found") || htmlLower.includes("404") || htmlLower.includes("we couldn't find that page")) {
         throw Object.assign(
-          new Error("Product page not found"),
+          new Error("Product not found"),
           { status: 404 }
         );
       }
-      
-      // Check for "Currently unavailable" or out of stock
-      if (htmlLower.includes("currently unavailable") && htmlLower.includes("out of stock")) {
-        console.warn("[SCRAPER] Product appears to be out of stock");
-      }
 
       const $ = cheerio.load(html);
-      
-      // Multiple selectors for title (Amazon layout changes)
+
       const titleSelectors = [
         "#productTitle",
         "h1.a-size-large.product-title-word-break",
         "h1[data-automation-id='title']",
         ".product-title",
+        "h1.a-size-base-plus",
+        "#title",
+        "span#productTitle",
       ];
 
       let title = "";
@@ -135,7 +172,6 @@ export async function scrapeProduct(
         if (title) break;
       }
 
-      // Multiple selectors for price (Amazon layout changes)
       const priceSelectors = [
         "#priceblock_dealprice",
         "#priceblock_ourprice",
@@ -147,83 +183,90 @@ export async function scrapeProduct(
         "span.a-price[data-a-color='base'] .a-offscreen",
         ".aok-align-center .a-price .a-offscreen",
         "[data-a-color='price'] .a-offscreen",
-        ".a-price-whole",
         "span.a-price-whole",
+        ".a-price-whole",
+        ".a-price .a-price-whole",
+        "#corePrice_desktop .a-price-whole",
       ];
 
       let price = "";
       for (const selector of priceSelectors) {
         const priceElement = $(selector).first();
         price = priceElement.text().trim() || priceElement.attr("aria-label") || "";
-        // Also check parent elements for price
         if (!price) {
           price = priceElement.parent().text().trim();
         }
         if (price) break;
       }
 
-      // Image URL selectors
-      const imageUrl =
-        $("#landingImage").attr("src") ||
-        $("#imgBlkFront").attr("src") ||
-        $(".a-dynamic-image").first().attr("src") ||
-        $("img[data-a-image-name='landingImage']").attr("src") ||
-        "";
+      const imageSelectors = [
+        "#landingImage",
+        "#imgBlkFront",
+        ".a-dynamic-image",
+        "img[data-a-image-name='landingImage']",
+        "#main-image",
+        ".a-button-selected img",
+        "#altImages img",
+      ];
+
+      let imageUrl = "";
+      for (const selector of imageSelectors) {
+        imageUrl = $(selector).first().attr("src") || $(selector).first().attr("data-src") || "";
+        if (imageUrl && !imageUrl.includes("placeholder")) break;
+      }
+
+      const ratingText = $(".a-icon-alt").first().text().trim();
+      const ratingMatch = ratingText.match(/(\d+\.?\d*)/);
+      const rating = ratingMatch ? parseFloat(ratingMatch[1]) : undefined;
 
       if (!title) {
-        console.warn(`[SCRAPER] Title not found. HTML length: ${html.length}`);
-        throw new Error("Product title not found - page structure may have changed");
+        throw Object.assign(
+          new Error("Title not found"),
+          { status: 404 }
+        );
       }
 
       if (!price) {
-        console.warn(`[SCRAPER] Price not found. Title found: ${title}`);
-        throw new Error("Product price not found - product may be out of stock or unavailable");
+        throw Object.assign(
+          new Error("Price not found - product may be unavailable"),
+          { status: 404 }
+        );
       }
 
       const priceNumber = parseFloat(price.replace(/[^0-9.]/g, ""));
       if (isNaN(priceNumber) || priceNumber <= 0) {
-        throw new Error(`Invalid price format: ${price}`);
+        throw new Error(`Invalid price: ${price}`);
       }
 
       const brandMatch = title.match(/^([^,]+)/);
       const brand = brandMatch ? brandMatch[1].trim() : undefined;
 
-      const attemptTime = Date.now() - attemptStartTime;
-      console.log(`[SCRAPER] ✅ Successfully scraped (attempt ${attempt}, ${attemptTime}ms): ${title.substring(0, 50)}... | ₹${priceNumber}`);
-      
       return {
         title,
         price,
         priceNumber,
         imageUrl,
         brand,
+        rating,
+        asin: asin || undefined,
       };
     } catch (error: any) {
-      const isLastAttempt = attempt === retries;
-      const errorMsg = error.message || "Unknown error";
-      
-      console.error(`[SCRAPER] Attempt ${attempt}/${retries} failed:`, errorMsg);
-      
-      if (isLastAttempt) {
-        const attemptTime = Date.now() - attemptStartTime;
-        console.error(`[SCRAPER] ❌ All ${retries} retries failed for URL: ${url} (last attempt: ${attemptTime}ms)`);
+      if (attempt === retries) {
         throw Object.assign(
-          new Error(`Failed to scrape product after ${retries} attempts: ${errorMsg}`),
+          new Error(`Scraping failed: ${error.message || "Unknown error"}`),
           {
             status: error.status || 502,
-            originalError: errorMsg,
-            url,
+            originalError: error.message,
+            url: normalizedUrl,
             isCaptcha: error.isCaptcha || false,
           }
         );
       }
-      
-      // Exponential backoff: 1s, 2s, 4s (reduced to save time)
+
       const delayMs = Math.min(1000 * Math.pow(2, attempt - 1), 6000);
-      console.log(`[SCRAPER] Retrying in ${delayMs}ms...`);
       await new Promise((r) => setTimeout(r, delayMs));
     }
   }
 
-  throw new Error("Unreachable code");
+  throw new Error("Unreachable");
 }

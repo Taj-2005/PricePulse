@@ -153,48 +153,43 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
       }
 
       text = await res.text();
-      let data: any;
+      let response: any;
       try {
-        data = JSON.parse(text);
+        response = JSON.parse(text);
       } catch (parseError) {
         console.error("[DashboardClient] Invalid JSON response:", text.substring(0, 200));
         throw new Error("Invalid JSON response from server");
       }
 
-      // Handle cached data gracefully
       if (!res.ok) {
-        // If we have cached data in the error response, use it
-        if (data?.cached && data?.title && data?.price) {
-          console.warn("[DashboardClient] Using cached data despite error:", data.error || "Unknown error");
-          setProduct({ title: data.title, price: data.price });
-          toast.dismiss(loadingToast);
-          toast.success(`Loaded cached data: ${data.title}`, {
-            icon: "📦",
-          });
-        } else {
-          throw new Error(data?.error || "Unknown server error");
-        }
-      } else {
-        // Success response
-        if (!data.title || !data.price) {
-          throw new Error("Incomplete product data");
-        }
+        const errorMessage = response?.error?.message || response?.error || "Unknown server error";
+        throw new Error(errorMessage);
+      }
 
-        setProduct({ title: data.title, price: data.price });
-        toast.dismiss(loadingToast);
-        
-        if (data.cached) {
-          toast.success(`Loaded cached data: ${data.title}`, {
-            icon: "📦",
-          });
-        } else {
-          toast.success("Product data loaded");
-        }
+      if (!response.success || !response.data) {
+        const errorMessage = response?.error?.message || "Invalid response format";
+        throw new Error(errorMessage);
+      }
+
+      const data = response.data;
+      if (!data.title || !data.price) {
+        throw new Error("Incomplete product data");
+      }
+
+      setProduct({ title: data.title, price: data.price });
+      toast.dismiss(loadingToast);
+
+      if (data.cached) {
+        toast.success(`Loaded cached data: ${data.title}`, {
+          icon: "📦",
+        });
+      } else {
+        toast.success("Product data loaded");
       }
 
       // Fetch history (non-blocking - don't fail if this errors)
       try {
-        const historyRes = await fetch(`/api/history?url=${encodeURIComponent(url)}`);
+        const historyRes = await fetch(`/api/history?url=${encodeURIComponent(data.url || url)}`);
         if (historyRes.ok) {
           const historyData = await historyRes.json();
           setHistory(historyData);

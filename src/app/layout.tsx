@@ -9,7 +9,6 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   display: "swap",
-  preload: true,
 });
 
 const geistMono = Geist_Mono({
@@ -22,7 +21,6 @@ const archivo = Archivo({
   variable: "--font-archivo",
   subsets: ["latin"],
   display: "swap",
-  preload: true,
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://amazon-pricepulse.vercel.app";
@@ -70,7 +68,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-  title: "PricePulse - Amazon Price Tracker & Smart Comparator",
+    title: "PricePulse - Amazon Price Tracker & Smart Comparator",
     description: "Track Amazon product prices, set alerts, and get notified when prices drop. Free price tracking with email alerts.",
     images: [`${siteUrl}/pricepulse4.png`],
     creator: "@PricePulse",
@@ -87,9 +85,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon3.ico",
-    shortcut: "/favicon3.ico",
-    apple: "/favicon3.ico",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/pricepulse4.png",
   },
   manifest: "/manifest.json",
   alternates: {
