@@ -18,6 +18,7 @@ import { createOrUpdateAlert, checkAndSendAlert } from "@/services/alertService"
 export async function POST(req: NextRequest) {
   const requestStartTime = Date.now();
   const MAX_EXECUTION_TIME = 8000; // 8s max to leave buffer for Vercel (10s hobby limit)
+  let requestBody: any = null; // Declare outside try block for catch block access
 
   try {
     // Wrap DB connection in try-catch to prevent 502 on connection failure
@@ -35,7 +36,6 @@ export async function POST(req: NextRequest) {
       // But we'll need to skip DB operations
     }
 
-    let requestBody;
     try {
       requestBody = await req.json();
     } catch (parseError: any) {

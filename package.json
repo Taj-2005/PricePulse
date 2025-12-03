@@ -57,5 +57,11 @@
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@testing-library/react": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }
