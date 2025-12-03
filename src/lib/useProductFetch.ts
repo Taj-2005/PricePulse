@@ -24,9 +24,6 @@ interface UseProductFetchReturn {
   error: string | null;
 }
 
-/**
- * Custom hook for fetching product data with automatic retries and error handling
- */
 export function useProductFetch(options: UseProductFetchOptions = {}): UseProductFetchReturn {
   const { maxRetries = 3, retryDelay = 2000, showToasts = true } = options;
   const [loading, setLoading] = useState(false);
@@ -50,7 +47,7 @@ export function useProductFetch(options: UseProductFetchOptions = {}): UseProduc
           if (targetPrice) body.targetPrice = targetPrice;
 
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
 
           try {
             const res = await fetch("/api/track", {
@@ -63,24 +60,23 @@ export function useProductFetch(options: UseProductFetchOptions = {}): UseProduc
             clearTimeout(timeoutId);
 
             const text = await res.text();
-            let data: any;
+            let response: any;
 
             try {
-              data = JSON.parse(text);
+              response = JSON.parse(text);
             } catch (parseError) {
               throw new Error("Invalid JSON response from server");
             }
 
             if (!res.ok) {
-              const errorMsg = data?.error || "Unknown server error";
+              const errorMsg = response?.error?.message || response?.error || "Unknown server error";
               
-              // If we have cached data, use it as fallback
-              if (data?.cached === true && data.title && data.price) {
-                console.warn("[useProductFetch] Using cached data despite error:", errorMsg);
+              if (response?.success === true && response?.data) {
+                const data = response.data;
                 setLoading(false);
                 setError(null);
                 if (showToasts) {
-                  toast.success(`Loaded cached data for ${data.title}`, {
+                  toast.success(`Loaded cached data: ${data.title}`, {
                     icon: "📦",
                   });
                 }
@@ -90,11 +86,16 @@ export function useProductFetch(options: UseProductFetchOptions = {}): UseProduc
               throw new Error(errorMsg);
             }
 
+            if (!response.success || !response.data) {
+              const errorMsg = response?.error?.message || "Invalid response format";
+              throw new Error(errorMsg);
+            }
+
+            const data = response.data;
             if (!data.title || !data.price) {
               throw new Error("Incomplete product data received from server");
             }
 
-            // Success!
             setLoading(false);
             setError(null);
 
@@ -123,7 +124,6 @@ export function useProductFetch(options: UseProductFetchOptions = {}): UseProduc
           
           console.error(`[useProductFetch] Attempt ${attempt}/${maxRetries} failed:`, errorMessage);
 
-          // Don't retry on certain errors
           if (
             err.message?.includes("Invalid URL") ||
             err.message?.includes("valid Amazon product URL") ||
@@ -138,13 +138,11 @@ export function useProductFetch(options: UseProductFetchOptions = {}): UseProduc
             return null;
           }
 
-          // If this is the last attempt, fail
           if (attempt === maxRetries) {
             setLoading(false);
             setError(errorMessage);
             
             if (showToasts) {
-              // Determine status code from error message
               let statusCode: number | undefined;
               if (errorMessage.includes("timeout")) statusCode = 504;
               else if (errorMessage.includes("Unable to fetch")) statusCode = 502;
@@ -157,7 +155,6 @@ export function useProductFetch(options: UseProductFetchOptions = {}): UseProduc
             return null;
           }
 
-          // Wait before retrying (exponential backoff)
           const delay = retryDelay * Math.pow(2, attempt - 1);
           console.log(`[useProductFetch] Retrying in ${delay}ms...`);
           
@@ -169,7 +166,6 @@ export function useProductFetch(options: UseProductFetchOptions = {}): UseProduc
         }
       }
 
-      // Should never reach here, but TypeScript needs it
       setLoading(false);
       if (lastError) {
         setError(lastError.message);
@@ -185,4 +181,3 @@ export function useProductFetch(options: UseProductFetchOptions = {}): UseProduc
 
   return { fetchProduct, loading, error };
 }
-
