@@ -337,12 +337,30 @@ For each TrackedProduct:
 # Run linter
 npm run lint
 
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+
 # Build for production
 npm run build
 
 # Start production server
 npm start
 ```
+
+### Test Coverage
+
+The test suite includes:
+- **API Route Tests:** Tests for `/api/track` endpoint covering all error paths
+- **Frontend Hook Tests:** Tests for `useProductFetch` hook with retry logic and error handling
+- **Error Scenarios:** Tests for timeout, network failures, cached data fallback
+
+See test files in `src/__tests__/` directory.
 
 ---
 
@@ -358,12 +376,139 @@ npm start
 
 ## 🚀 Deployment
 
+### Required Environment Variables
+
+Before deploying, ensure all environment variables are set. These must be configured in your Vercel dashboard:
+
+#### Required Variables
+
+```env
+# MongoDB Connection String
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/pricepulse?retryWrites=true&w=majority
+
+# ScraperAPI Key (get from https://www.scraperapi.com/)
+SCRAPER_API_KEY=your_scraperapi_key_here
+
+# JWT Secret (generate with: openssl rand -base64 32)
+JWT_SECRET=your_jwt_secret_here
+```
+
+#### Optional Variables
+
+```env
+# SendGrid Configuration (for email alerts)
+SENDGRID_API_KEY=your_sendgrid_api_key_here
+SENDGRID_FROM_EMAIL=noreply@yourdomain.com
+
+# Cron Secret (for scheduled price checks)
+CRON_SECRET=your_cron_secret_here
+```
+
 ### Deploy to Vercel
 
-1. Push your code to GitHub
-2. Import project in Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy!
+#### Method 1: Vercel Dashboard (Recommended)
+
+1. **Push Code to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Fix: Product fetching and 502 errors"
+   git push origin main
+   ```
+
+2. **Import Project in Vercel:**
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click "Add New Project"
+   - Import your GitHub repository
+   - Select the repository
+
+3. **Configure Project:**
+   - Framework Preset: **Next.js** (auto-detected)
+   - Root Directory: `./` (default)
+   - Build Command: `npm run build` (default)
+   - Output Directory: `.next` (default)
+
+4. **Add Environment Variables:**
+   - Go to Project Settings → Environment Variables
+   - Add each required variable (see above)
+   - Select environments: **Production**, **Preview**, **Development**
+   - Click "Save"
+
+5. **Deploy:**
+   - Click "Deploy"
+   - Wait for build to complete
+   - Verify deployment URL
+
+#### Method 2: Vercel CLI
+
+1. **Install Vercel CLI:**
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Login:**
+   ```bash
+   vercel login
+   ```
+
+3. **Deploy:**
+   ```bash
+   # Deploy to preview
+   vercel
+
+   # Deploy to production
+   vercel --prod
+   ```
+
+4. **Set Environment Variables:**
+   ```bash
+   vercel env add MONGODB_URI
+   vercel env add SCRAPER_API_KEY
+   vercel env add JWT_SECRET
+   # ... add other variables
+   ```
+
+### Post-Deployment Verification
+
+After deployment, verify everything works:
+
+1. **Check Deployment Status:**
+   - Go to Vercel Dashboard → Your Project → Deployments
+   - Verify build completed successfully (green checkmark)
+
+2. **Test Production API:**
+   ```bash
+   curl -X POST https://your-app.vercel.app/api/track \
+     -H "Content-Type: application/json" \
+     -d '{"url": "https://www.amazon.in/dp/B08N5WRWNW"}'
+   ```
+   Should return 200 OK with product data.
+
+3. **Test Production Frontend:**
+   - Navigate to your Vercel deployment URL
+   - Open browser console (F12)
+   - Verify no errors
+   - Test product tracking
+
+4. **Check Function Logs:**
+   - Vercel Dashboard → Your Project → Deployments → Select deployment
+   - Click "Functions" tab
+   - Verify no 502 errors
+   - Check execution times (should be < 8 seconds)
+
+### Quick Rollback
+
+If issues occur after deployment:
+
+1. **Via Vercel Dashboard:**
+   - Go to Deployments tab
+   - Find previous working deployment
+   - Click "⋯" → "Promote to Production"
+
+2. **Via Git:**
+   ```bash
+   git revert HEAD
+   git push origin main
+   ```
 
 ### Set Up Automated Price Checking
 
@@ -377,6 +522,14 @@ The workflow file is already created at `.github/workflows/price-check-cron.yml`
 **Alternative: Use free external cron services** like Cron-job.org, EasyCron, or UptimeRobot.
 
 📖 **See [AUTOMATION.md](./AUTOMATION.md) for detailed setup instructions.**
+
+### Monitoring & Debugging
+
+- **Vercel Analytics:** Monitor function execution times and error rates
+- **Function Logs:** View detailed logs in Vercel Dashboard
+- **Error Tracking:** Check Vercel Dashboard for failed requests
+
+📖 **For comprehensive verification steps, see [VERIFY.md](./VERIFY.md)**
 
 ---
 

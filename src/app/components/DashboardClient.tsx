@@ -129,33 +129,82 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
         });
       }, 100);
 
-    const body: any = { url };
-    const res = await fetch("/api/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-    const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error("Invalid JSON response from server");
-    }
+      const body: any = { url };
+      let res: Response;
+      let text: string;
 
-    if (!res.ok) throw new Error(data?.error || "Unknown server error");
-    if (!data.title || !data.price) throw new Error("Incomplete product data");
+      try {
+        res = await fetch("/api/track", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === "AbortError") {
+          throw new Error("Request timed out. Please try again.");
+        }
+        throw fetchError;
+      }
 
-    setProduct({ title: data.title, price: data.price });
-      toast.dismiss(loadingToast);
-      toast.success("Product data loaded");
+      text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        console.error("[DashboardClient] Invalid JSON response:", text.substring(0, 200));
+        throw new Error("Invalid JSON response from server");
+      }
 
-    const historyRes = await fetch(`/api/history?url=${encodeURIComponent(url)}`);
-    if (!historyRes.ok) throw new Error("Failed to fetch price history");
+      // Handle cached data gracefully
+      if (!res.ok) {
+        // If we have cached data in the error response, use it
+        if (data?.cached && data?.title && data?.price) {
+          console.warn("[DashboardClient] Using cached data despite error:", data.error || "Unknown error");
+          setProduct({ title: data.title, price: data.price });
+          toast.dismiss(loadingToast);
+          toast.success(`Loaded cached data: ${data.title}`, {
+            icon: "📦",
+          });
+        } else {
+          throw new Error(data?.error || "Unknown server error");
+        }
+      } else {
+        // Success response
+        if (!data.title || !data.price) {
+          throw new Error("Incomplete product data");
+        }
 
-    const historyData = await historyRes.json();
-    setHistory(historyData);
+        setProduct({ title: data.title, price: data.price });
+        toast.dismiss(loadingToast);
+        
+        if (data.cached) {
+          toast.success(`Loaded cached data: ${data.title}`, {
+            icon: "📦",
+          });
+        } else {
+          toast.success("Product data loaded");
+        }
+      }
+
+      // Fetch history (non-blocking - don't fail if this errors)
+      try {
+        const historyRes = await fetch(`/api/history?url=${encodeURIComponent(url)}`);
+        if (historyRes.ok) {
+          const historyData = await historyRes.json();
+          setHistory(historyData);
+        } else {
+          console.warn("[DashboardClient] Failed to fetch price history (non-critical)");
+        }
+      } catch (historyError: any) {
+        console.warn("[DashboardClient] Error fetching history (non-critical):", historyError.message);
+        // Don't throw - history is nice to have but not critical
+      }
       
       setTimeout(() => {
         historySectionRef.current?.scrollIntoView({ 
@@ -164,6 +213,10 @@ export default function DashboardClient({ userEmail }: { userEmail: string }) {
         });
       }, 300);
     } catch (err: any) {
+      console.error("[DashboardClient] Error fetching product:", {
+        message: err.message,
+        url,
+      });
       toast.dismiss(loadingToast);
       toast.error(err.message || "Failed to fetch product data");
       setProduct(null);

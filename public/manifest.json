@@ -9,9 +9,14 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/favicon3.ico",
+      "src": "/favicon.ico",
       "sizes": "any",
       "type": "image/x-icon"
+    },
+    {
+      "src": "/pricepulse.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }
