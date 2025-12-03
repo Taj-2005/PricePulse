@@ -5,6 +5,7 @@ import { Line } from "react-chartjs-2";
 import toast from "react-hot-toast";
 import getFriendlyErrorMessage from "@/lib/errors";
 import { usePathname } from "next/navigation";
+import { useProductFetch } from "@/lib/useProductFetch";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -56,7 +57,7 @@ const TrackingForm = ({ defaultEmail }: TrackingFormProps) => {
   } | null>(null);
   const [history, setHistory] = useState<{ price: number; timestamp: string }[]>([]);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
-  const [loading, setLoading] = useState(false);
+  const { fetchProduct, loading, error } = useProductFetch({ maxRetries: 3 });
 
   useEffect(() => {
     if (defaultEmail) {
@@ -89,7 +90,6 @@ const TrackingForm = ({ defaultEmail }: TrackingFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("Tracking...");
-    setLoading(true);
     setProduct(null);
     setHistory([]);
 
@@ -99,63 +99,33 @@ const TrackingForm = ({ defaultEmail }: TrackingFormProps) => {
         emailToSend = defaultEmail;
       }
 
-      const body: any = { url };
-      if (emailToSend) body.userEmail = emailToSend;
-      if (targetPrice) body.targetPrice = Number(targetPrice);
+      const targetPriceNum = targetPrice ? Number(targetPrice) : undefined;
+      const productData = await fetchProduct(url, emailToSend || undefined, targetPriceNum);
 
-      const res = await fetch("/api/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error("Invalid JSON response from server");
+      if (!productData) {
+        setStatus(error || "Failed to track product");
+        return;
       }
-
-      if (!res.ok) throw new Error(data?.error || "Unknown server error");
-      if (!data.title || !data.price) throw new Error("Incomplete product data");
 
       setProduct({
-        id: data.id,
-        title: data.title,
-        price: data.price,
-        priceNumber: data.priceNumber,
-        imageUrl: data.imageUrl,
-        url: data.url || url,
+        id: productData.id,
+        title: productData.title,
+        price: productData.price,
+        priceNumber: productData.priceNumber,
+        imageUrl: productData.imageUrl,
+        url: productData.url || url,
       });
-      setStatus(`Tracked: ${data.title} @ ${data.price}`);
-      toast.success("Product tracked successfully!");
-
-      await fetchHistory(data.url || url, timeFilter);
-    } catch (err: any) {
-      console.error("Frontend error:", err.message);
-      let friendlyMessage = getFriendlyErrorMessage(500);
-
-      if (err.status === 502 || err.message.includes("Failed to scrape")) {
-        friendlyMessage = getFriendlyErrorMessage(502);
-      } else if (
-        err.message.includes("Product not found") ||
-        err.message.includes("404")
-      ) {
-        friendlyMessage = getFriendlyErrorMessage(404);
-      } else if (
-        err.message.includes("Too many requests") ||
-        err.message.includes("429")
-      ) {
-        friendlyMessage = getFriendlyErrorMessage(429);
-      } else if (err.message.includes("Invalid URL")) {
-        friendlyMessage = getFriendlyErrorMessage(400);
+      setStatus(`Tracked: ${productData.title} @ ${productData.price}`);
+      
+      if (!productData.cached) {
+        toast.success("Product tracked successfully!");
       }
 
-      toast.error(friendlyMessage);
+      await fetchHistory(productData.url || url, timeFilter);
+    } catch (err: any) {
+      console.error("[TrackingForm] Unexpected error:", err.message);
+      const friendlyMessage = error || getFriendlyErrorMessage(500);
       setStatus(friendlyMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
